@@ -1,0 +1,30 @@
+:root {
+  --fire-amber:    #F4A35A;
+  --fire-orange:   #E8622A;
+  --fire-core:     #FFE08A;
+  --bg-deep:       rgba(6, 3, 1, 0.82);
+  --text-primary:  rgba(245, 220, 175, 0.92);
+  --text-dim:      rgba(200, 165, 110, 0.5);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  background: transparent;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}

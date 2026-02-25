@@ -1,0 +1,237 @@
+.panel {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: rgba(8, 5, 2, 0.92);
+  border-right: 1px solid rgba(255, 140, 40, 0.12);
+  border-radius: 16px 16px 0 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 140, 40, 0.1);
+  flex-shrink: 0;
+}
+
+.headerTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(245, 215, 160, 0.9);
+  flex: 1;
+}
+
+.headerAgents {
+  display: flex;
+  gap: 4px;
+}
+
+.agentDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  opacity: 0.7;
+}
+
+.tokenBadge {
+  font-size: 9px;
+  color: rgba(200, 160, 80, 0.45);
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border: 1px solid rgba(200, 160, 80, 0.15);
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 4px;
+  transition: color 0.15s;
+}
+.closeBtn:hover { color: rgba(255, 255, 255, 0.7); }
+
+/* 메시지 목록 */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 14px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 140, 40, 0.15) transparent;
+}
+.messages::-webkit-scrollbar { width: 3px; }
+.messages::-webkit-scrollbar-thumb { background: rgba(255,140,40,0.15); border-radius: 2px; }
+
+.empty {
+  margin: auto;
+  text-align: center;
+  color: rgba(200, 160, 100, 0.3);
+  font-size: 12px;
+  line-height: 2;
+}
+
+/* 유저 메시지 */
+.userRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.userBubble {
+  max-width: 80%;
+  background: rgba(255, 120, 35, 0.18);
+  border: 1px solid rgba(255, 120, 35, 0.2);
+  border-radius: 14px 14px 2px 14px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: rgba(255, 225, 170, 0.92);
+  line-height: 1.55;
+}
+
+/* 에이전트 메시지 */
+.agentRow {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.agentAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(10, 6, 2, 0.7);
+  margin-top: 2px;
+  overflow: hidden;
+}
+
+.avatarImg {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.agentBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.agentName {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.agentBubble {
+  max-width: 92%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 2px 14px 14px 14px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: rgba(240, 225, 200, 0.85);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* 타이핑 인디케이터 */
+.typingRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.typingBubble {
+  display: flex;
+  gap: 4px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 2px 14px 14px 14px;
+}
+
+.typingDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(200, 160, 100, 0.5);
+  animation: blink 1.2s ease-in-out infinite;
+}
+.typingDot:nth-child(2) { animation-delay: 0.2s; }
+.typingDot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40%           { opacity: 1;   transform: scale(1.1); }
+}
+
+/* 입력창 */
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 14px;
+  border-top: 1px solid rgba(255, 140, 40, 0.1);
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 140, 40, 0.18);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: rgba(255, 235, 195, 0.92);
+  font-size: 13px;
+  font-family: 'Pretendard', sans-serif;
+  resize: none;
+  outline: none;
+  transition: border-color 0.15s;
+  line-height: 1.5;
+}
+.input:focus { border-color: rgba(255, 140, 40, 0.4); }
+.input::placeholder { color: rgba(255,255,255,0.2); }
+
+.sendBtn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  background: rgba(240, 110, 30, 0.15);
+  border: 1px solid rgba(240, 110, 30, 0.35);
+  color: rgba(255, 200, 130, 0.75);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Pretendard', sans-serif;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  align-self: center;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, color 0.2s;
+}
+.sendBtn:hover:not(:disabled) {
+  background: rgba(240, 110, 30, 0.6);
+  border-color: rgba(255, 140, 40, 0.8);
+  box-shadow: 0 0 14px 3px rgba(240, 110, 30, 0.35);
+  color: rgba(255, 240, 205, 1);
+}
+.sendBtn:disabled { opacity: 0.2; cursor: default; }

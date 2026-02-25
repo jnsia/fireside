@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>역할별 아바타 선택</title>
+  <style>
+    body { background: #0a0604; color: #f5deb3; font-family: -apple-system, sans-serif; padding: 28px; }
+    h1 { font-size: 16px; color: #f4a261; margin-bottom: 24px; }
+    .role { margin-bottom: 28px; }
+    .role-title { font-size: 13px; font-weight: 700; color: #e9c46a; margin-bottom: 10px; letter-spacing: 0.05em; }
+    .options { display: flex; gap: 12px; flex-wrap: wrap; }
+    .option { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
+    .option img {
+      width: 60px; height: 60px; border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.1);
+      transition: border-color 0.2s;
+    }
+    .option:hover img { border-color: #f4a261; }
+    .option span { font-size: 9px; color: rgba(255,220,160,0.4); }
+  </style>
+</head>
+<body>
+  <h1>🔥 역할별 아바타 — notionists</h1>
+  <div id="container"></div>
+
+  <script>
+    const roles = [
+      {
+        name: '📋 기획자 (Planner)',
+        color: 'F4A261',
+        options: [
+          { seed: 'planner-a', params: 'glassesProbability=100&gesture=variant01' },
+          { seed: 'planner-b', params: 'glassesProbability=100&gesture=variant03' },
+          { seed: 'planner-c', params: 'glassesProbability=100&gesture=variant05' },
+          { seed: 'planner-d', params: 'glassesProbability=100&gesture=variant07' },
+          { seed: 'pm-lead',   params: 'glassesProbability=100' },
+          { seed: 'manager',   params: 'glassesProbability=100&gesture=variant02' },
+        ]
+      },
+      {
+        name: '🎨 디자이너 (Designer)',
+        color: 'E76F51',
+        options: [
+          { seed: 'designer-a', params: 'glassesProbability=0&gesture=variant02' },
+          { seed: 'designer-b', params: 'glassesProbability=0&gesture=variant04' },
+          { seed: 'designer-c', params: 'glassesProbability=0&gesture=variant06' },
+          { seed: 'creative',   params: 'glassesProbability=0' },
+          { seed: 'ux-lead',    params: 'glassesProbability=0&gesture=variant01' },
+          { seed: 'artist',     params: 'glassesProbability=0&gesture=variant08' },
+        ]
+      },
+      {
+        name: '💻 개발자 (Developer)',
+        color: '2A9D8F',
+        options: [
+          { seed: 'dev-a',     params: 'beardProbability=60&gesture=variant01' },
+          { seed: 'dev-b',     params: 'beardProbability=60&gesture=variant03' },
+          { seed: 'dev-c',     params: 'beardProbability=60&gesture=variant05' },
+          { seed: 'engineer',  params: 'beardProbability=40&glassesProbability=50' },
+          { seed: 'fullstack', params: 'beardProbability=80' },
+          { seed: 'coder',     params: 'glassesProbability=60&gesture=variant04' },
+        ]
+      },
+      {
+        name: '🔍 QA',
+        color: '5C8B9B',
+        options: [
+          { seed: 'qa-a',     params: 'glassesProbability=100&gesture=variant01' },
+          { seed: 'qa-b',     params: 'glassesProbability=100&gesture=variant02' },
+          { seed: 'qa-c',     params: 'glassesProbability=100&gesture=variant04' },
+          { seed: 'tester',   params: 'glassesProbability=100' },
+          { seed: 'quality',  params: 'glassesProbability=100&gesture=variant06' },
+          { seed: 'analyst',  params: 'glassesProbability=100&gesture=variant08' },
+        ]
+      },
+      {
+        name: '🦉 멘토 (Mentor)',
+        color: 'E9C46A',
+        options: [
+          { seed: 'mentor-a', params: 'beardProbability=100&gesture=variant01' },
+          { seed: 'mentor-b', params: 'beardProbability=100&gesture=variant03' },
+          { seed: 'mentor-c', params: 'beardProbability=100&gesture=variant05' },
+          { seed: 'senior',   params: 'beardProbability=100' },
+          { seed: 'advisor',  params: 'beardProbability=80&glassesProbability=60' },
+          { seed: 'wise',     params: 'beardProbability=100&glassesProbability=80' },
+        ]
+      },
+    ]
+
+    const container = document.getElementById('container')
+    roles.forEach(role => {
+      const div = document.createElement('div')
+      div.className = 'role'
+      div.innerHTML = `<div class="role-title">${role.name}</div><div class="options"></div>`
+      const opts = div.querySelector('.options')
+
+      role.options.forEach((opt, i) => {
+        const url = `https://api.dicebear.com/9.x/notionists/svg?seed=${opt.seed}&backgroundColor=${role.color}&${opt.params}&size=60`
+        const el = document.createElement('div')
+        el.className = 'option'
+        el.innerHTML = `<img src="${url}" /><span>${i + 1}</span>`
+        opts.appendChild(el)
+      })
+
+      container.appendChild(div)
+    })
+  </script>
+</body>
+</html>

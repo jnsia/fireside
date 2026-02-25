@@ -1,0 +1,36 @@
+{
+  "name": "fireside",
+  "version": "1.0.0",
+  "description": "AI agents gathered around a campfire",
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.23.0",
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.4",
+    "electron": "^40.6.0",
+    "electron-builder": "^26.8.1",
+    "electron-vite": "^5.0.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@electron-toolkit/utils": "^4.0.0",
+    "dotenv": "^17.3.1",
+    "framer-motion": "^12.34.3",
+    "groq-sdk": "^0.37.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  }
+}
