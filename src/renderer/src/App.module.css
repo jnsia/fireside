@@ -2,13 +2,13 @@
   width: 100vw;
   height: 100vh;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  position: relative;
-  pointer-events: auto;
+  justify-content: center;
+  background: transparent;
+  pointer-events: none;
 }
 
-/* ── 접힘 ── */
+/* ── 접힘: 캠프파이어 아이콘 ── */
 .collapsed {
   position: absolute;
   inset: 0;
@@ -19,80 +19,247 @@
   -webkit-app-region: drag;
   cursor: grab;
   pointer-events: auto;
+  background: transparent;
+}
+.collapsed:active {
+  cursor: grabbing;
 }
 .collapsed > * { -webkit-app-region: no-drag; }
 
-/* ── 상단 공간 (채팅 or 빈 공간) ── */
-.topArea {
-  flex: 1;
-  width: 320px;
-  min-height: 0;
+/* ── 펼침: 앱 창 프레임 ── */
+.windowFrame {
+  width: 1300px;
+  height: 900px;
   display: flex;
   flex-direction: column;
-  padding: 12px 0 0;
-  pointer-events: none;
+  background: rgba(10, 7, 3, 0.97);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 140, 40, 0.14);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    0 32px 80px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 160, 60, 0.06);
+  pointer-events: auto;
+  overflow: hidden;
+  position: relative;
 }
 
-/* 채팅 패널 */
-.chat {
-  flex: 1;
-  min-height: 0;
-  border-radius: 16px;
-  overflow: hidden;
-  pointer-events: auto;
+/* ── 타이틀바 ── */
+.titleBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  height: 38px;
+  flex-shrink: 0;
+  -webkit-app-region: drag;
+  border-bottom: 1px solid rgba(255, 140, 40, 0.08);
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.titleIcon {
+  font-size: 14px;
   -webkit-app-region: no-drag;
 }
 
-/* ── 하단 섹션: 에이전트 반원 + 캠프파이어 ── */
-.bottomSection {
-  position: relative;
-  width: 340px;
-  height: 260px;
-  flex-shrink: 0;
+.titleText {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(245, 210, 150, 0.7);
+  letter-spacing: 0.04em;
 }
 
-/* 캠프파이어 — bottomSection 안에서 절대 하단 */
-.campfireExpanded {
-  position: absolute;
-  width: 170px;
-  height: 170px;
-  left: 85px;   /* EXP_W/2 - 85 */
-  bottom: 20px;
+.titleSpacer { flex: 1; }
+
+.titleClose {
+  -webkit-app-region: no-drag;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.22);
+  font-size: 14px;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 7px;
+  transition: background 0.15s, color 0.15s;
+  transform: rotate(180deg);
+}
+.titleClose:hover {
+  background: rgba(255, 80, 40, 0.15);
+  color: rgba(255, 180, 130, 0.9);
+}
+
+/* ── 3패널 워크스페이스 ── */
+.workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+}
+
+.explorerPane {
+  width: 210px;
+  flex-shrink: 0;
+  border-right: 1px solid rgba(255, 140, 40, 0.08);
+  overflow: hidden;
+}
+
+.editorPane {
+  flex: 1;
+  min-width: 0;
+  border-right: 1px solid rgba(255, 140, 40, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chatPane {
+  width: 350px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.chatPlaceholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: rgba(245, 215, 160, 0.2);
+  user-select: none;
+}
+
+.placeholderIcon {
+  font-size: 40px;
+  filter: grayscale(1) opacity(0.5);
+}
+
+.placeholderText {
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+/* ── 탭바 ── */
+.tabBar {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 140, 40, 0.08);
+  background: rgba(0, 0, 0, 0.15);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  gap: 0;
+}
+.tabBar::-webkit-scrollbar { display: none; }
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px 0 12px;
+  height: 100%;
+  border: none;
+  border-right: 1px solid rgba(255, 140, 40, 0.06);
+  background: transparent;
+  color: rgba(190, 165, 120, 0.45);
+  font-size: 11px;
+  font-family: 'Pretendard', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s;
+  flex-shrink: 0;
+}
+.tab:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(230, 210, 165, 0.8);
+}
+.tab.tabActive {
+  background: rgba(255, 140, 40, 0.09);
+  color: rgba(255, 215, 140, 0.95);
+  border-bottom: 1px solid rgba(255, 140, 40, 0.4);
+}
+
+.tabName {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tabClose {
+  font-size: 12px;
+  color: rgba(200, 175, 130, 0.3);
+  line-height: 1;
+  padding: 1px 2px;
+  border-radius: 3px;
+  transition: background 0.12s, color 0.12s;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.tabClose:hover {
+  background: rgba(255, 80, 40, 0.2);
+  color: rgba(255, 160, 120, 0.9);
+}
+
+.tabEmpty {
+  padding: 0 14px;
+  color: rgba(180, 155, 110, 0.25);
+  font-size: 11px;
+  font-family: 'Pretendard', sans-serif;
+  font-style: italic;
+  user-select: none;
+}
+
+.editorContent {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── 하단 섹션: 에이전트 + 캠프파이어 ── */
+.bottomSection {
+  height: 180px;
+  flex-shrink: 0;
+  position: relative;
+  border-top: 1px solid rgba(255, 140, 40, 0.07);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.campfireBottom {
+  position: absolute;
+  left: calc(50% - 70px);
+  top: 40px;   /* 180px - 140px = 40px from top */
   pointer-events: auto;
   -webkit-app-region: no-drag;
   z-index: 1;
 }
 
-/* ── 접기 버튼 ── */
-.collapseBtn {
+/* ── 채팅 오버레이 ── */
+.chatOverlay {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: rgba(15, 8, 2, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 200, 130, 0.7);
-  font-size: 9px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-  line-height: 1;
+  bottom: 190px;    /* bottomSection (180) + gap (10) */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 420px;
+  height: 500px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255, 140, 40, 0.15),
+    0 12px 40px rgba(0, 0, 0, 0.65),
+    0 4px 16px rgba(0, 0, 0, 0.4);
+  z-index: 20;
   pointer-events: auto;
-  -webkit-app-region: no-drag;
-  z-index: 10;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
-.collapseBtn:hover {
-  background: rgba(200, 70, 20, 0.7);
-  color: rgba(255, 220, 160, 1);
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
 }

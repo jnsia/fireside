@@ -8,6 +8,12 @@
   border-radius: 16px 16px 0 0;
 }
 
+.panel.isPanel {
+  background: transparent;
+  border-right: none;
+  border-radius: 0;
+}
+
 .header {
   display: flex;
   align-items: center;

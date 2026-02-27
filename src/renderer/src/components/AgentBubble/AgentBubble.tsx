@@ -7,6 +7,7 @@ interface AgentBubbleProps {
   agent: Agent
   style?: React.CSSProperties
   floatIndex?: number
+  onClick?: () => void
 }
 
 const itemVariants = {
@@ -14,7 +15,7 @@ const itemVariants = {
   visible: { opacity: 1, scale: 1   }
 }
 
-export function AgentBubble({ agent, style, floatIndex = 0 }: AgentBubbleProps) {
+export function AgentBubble({ agent, style, floatIndex = 0, onClick }: AgentBubbleProps) {
   const [imgFailed, setImgFailed] = useState(false)
 
   const cssVars = {
@@ -27,8 +28,9 @@ export function AgentBubble({ agent, style, floatIndex = 0 }: AgentBubbleProps) 
 
   return (
     <motion.div
-      className={styles.wrap}
+      className={`${styles.wrap} ${onClick ? styles.clickable : ''}`}
       style={{ ...style, ...cssVars }}
+      onClick={onClick}
       variants={itemVariants}
       initial="hidden"
       animate="visible"

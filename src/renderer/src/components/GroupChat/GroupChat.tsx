@@ -5,14 +5,16 @@ import type { Message } from '../../types'
 import styles from './GroupChat.module.css'
 
 interface GroupChatProps {
-  onClose: () => void
+  onClose?: () => void
+  isPanel?: boolean
+  onFilesChanged?: () => void
 }
 
 interface TypingState {
   agentId: string
 }
 
-export function GroupChat({ onClose }: GroupChatProps) {
+export function GroupChat({ onClose, isPanel = false, onFilesChanged }: GroupChatProps) {
   const [messages, setMessages] = useState<Message[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('fireside-history') ?? '[]')
@@ -95,10 +97,10 @@ export function GroupChat({ onClose }: GroupChatProps) {
   }
 
   return (
-    <div className={styles.panel}>
+    <div className={`${styles.panel} ${isPanel ? styles.isPanel : ''}`}>
       <div className={styles.header}>
         <span style={{ fontSize: 15 }}>🔥</span>
-        <span className={styles.headerTitle}>Fireside</span>
+        <span className={styles.headerTitle}>Fireside Chat</span>
         <div className={styles.headerAgents}>
           {AGENTS.map(a => (
             <div key={a.id} className={styles.agentDot} style={{ background: a.color }} />
@@ -109,7 +111,7 @@ export function GroupChat({ onClose }: GroupChatProps) {
             {totalTokens.toLocaleString()} tok
           </span>
         )}
-        <button className={styles.closeBtn} onClick={onClose}>✕</button>
+        {!isPanel && <button className={styles.closeBtn} onClick={onClose}>✕</button>}
       </div>
 
       <div className={styles.messages}>

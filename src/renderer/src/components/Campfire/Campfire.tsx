@@ -10,7 +10,7 @@ interface CampfireProps {
 type Ember = { x: number; y: number; vx: number; vy: number; life: number; max: number; r: number }
 
 const FULL = { size: 140, cx: 70, base: 90, gR: 42, gY: 90 }
-const MINI = { size: 72,  cx: 36, base: 46, gR: 22, gY: 46 }
+const MINI = { size: 32,  cx: 16, base: 22, gR: 10, gY: 22 }
 
 export function Campfire({ onClick, collapsed = false }: CampfireProps) {
   const canvasRef  = useRef<HTMLCanvasElement>(null)
@@ -120,7 +120,7 @@ export function Campfire({ onClick, collapsed = false }: CampfireProps) {
       whileTap={{ scale: 0.94 }}
       title={collapsed ? '펼치기' : '모닥불'}
     >
-      <div className={styles.halo} />
+      <div className={styles.halo} style={{ opacity: collapsed ? 0 : undefined }} />
       <canvas ref={canvasRef} className={styles.canvas} />
     </motion.div>
   )

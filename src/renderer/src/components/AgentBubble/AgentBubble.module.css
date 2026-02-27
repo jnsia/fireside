@@ -9,6 +9,11 @@
   z-index: 2;
 }
 
+.wrap.clickable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 .bubble {
   width: 52px;
   height: 52px;
