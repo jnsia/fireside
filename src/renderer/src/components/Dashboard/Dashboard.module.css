@@ -1,0 +1,145 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+  gap: 30px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.container::-webkit-scrollbar { display: none; }
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 140, 40, 0.15);
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(245, 215, 160, 0.9);
+}
+
+.subtitle {
+  font-size: 12px;
+  color: rgba(245, 215, 160, 0.4);
+}
+
+/* Calendar */
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.dayHeader {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 140, 40, 0.5);
+  padding-bottom: 8px;
+}
+
+.day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: rgba(245, 215, 160, 0.6);
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.dayEmpty { aspect-ratio: 1; }
+
+.today {
+  background: rgba(255, 140, 40, 0.2);
+  color: rgba(255, 140, 40, 1);
+  font-weight: 800;
+  border: 1px solid rgba(255, 140, 40, 0.3);
+}
+
+/* Timeline */
+.timelineSection {
+  flex: 1;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: flex;
+  gap: 16px;
+  min-height: 50px;
+}
+
+.timeLineCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 12px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 140, 40, 0.4);
+  margin-top: 6px;
+  border: 2px solid rgba(10, 7, 3, 1);
+  z-index: 1;
+}
+
+.line {
+  flex: 1;
+  width: 2px;
+  background: rgba(255, 140, 40, 0.1);
+  margin: -2px 0;
+}
+
+.itemContent {
+  flex: 1;
+  padding-bottom: 16px;
+}
+
+.itemTime {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 140, 40, 0.8);
+  margin-bottom: 4px;
+}
+
+.itemText {
+  font-size: 13px;
+  color: rgba(245, 215, 160, 0.85);
+  line-height: 1.4;
+}
+
+.completed .dot {
+  background: rgba(100, 200, 100, 0.6);
+}
+
+.completed .itemText {
+  color: rgba(245, 215, 160, 0.3);
+  text-decoration: line-through;
+}
+
+.loading, .empty {
+  text-align: center;
+  padding: 40px 0;
+  font-size: 12px;
+  color: rgba(245, 215, 160, 0.3);
+  font-style: italic;
+}
