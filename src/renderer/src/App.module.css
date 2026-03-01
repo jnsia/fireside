@@ -8,7 +8,6 @@
   pointer-events: none;
 }
 
-/* ── 접힘: 캠프파이어 아이콘 ── */
 .collapsed {
   position: absolute;
   inset: 0;
@@ -21,12 +20,15 @@
   pointer-events: auto;
   background: transparent;
 }
+
 .collapsed:active {
   cursor: grabbing;
 }
-.collapsed > * { -webkit-app-region: no-drag; }
 
-/* ── 펼침: 앱 창 프레임 ── */
+.collapsed > * {
+  -webkit-app-region: no-drag;
+}
+
 .windowFrame {
   width: 1300px;
   height: 900px;
@@ -45,7 +47,6 @@
   position: relative;
 }
 
-/* ── 타이틀바 ── */
 .titleBar {
   display: flex;
   align-items: center;
@@ -70,7 +71,20 @@
   letter-spacing: 0.04em;
 }
 
-.titleSpacer { flex: 1; }
+.titleSpacer {
+  flex: 1;
+}
+
+.modeResetBtn {
+  -webkit-app-region: no-drag;
+  border: 1px solid rgba(255, 140, 40, 0.24);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 214, 146, 0.88);
+  font-size: 11px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
 
 .titleClose {
   -webkit-app-region: no-drag;
@@ -88,68 +102,61 @@
   transition: background 0.15s, color 0.15s;
   transform: rotate(180deg);
 }
+
 .titleClose:hover {
   background: rgba(255, 80, 40, 0.15);
   color: rgba(255, 180, 130, 0.9);
 }
 
-/* ── 3패널 워크스페이스 ── */
 .workspace {
   flex: 1;
   min-height: 0;
   display: flex;
-  flex-direction: row;
 }
 
-.explorerPane {
-  width: 210px;
-  flex-shrink: 0;
-  border-right: 1px solid rgba(255, 140, 40, 0.08);
-  overflow: hidden;
-}
-
-.editorPane {
+.workspaceMain {
   flex: 1;
   min-width: 0;
-  border-right: 1px solid rgba(255, 140, 40, 0.08);
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
 }
 
 .chatPane {
-  width: 350px;
+  width: 360px;
   flex-shrink: 0;
-  overflow: hidden;
+  border-left: 1px solid rgba(255, 140, 40, 0.08);
   background: rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
+  overflow: hidden;
 }
 
-.chatPlaceholder {
+.infoPane {
+  width: 360px;
+  flex-shrink: 0;
+  border-left: 1px solid rgba(255, 140, 40, 0.08);
+  background: rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.defaultLayout {
   flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.defaultSidebar {
+  width: 240px;
+  flex-shrink: 0;
+  border-right: 1px solid rgba(255, 140, 40, 0.08);
+  overflow: hidden;
+}
+
+.defaultMain {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  color: rgba(245, 215, 160, 0.2);
-  user-select: none;
+  overflow: hidden;
 }
 
-.placeholderIcon {
-  font-size: 40px;
-  filter: grayscale(1) opacity(0.5);
-}
-
-.placeholderText {
-  font-size: 14px;
-  text-align: center;
-  line-height: 1.6;
-  font-weight: 500;
-}
-
-/* ── 탭바 ── */
 .tabBar {
   display: flex;
   align-items: center;
@@ -160,9 +167,11 @@
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
-  gap: 0;
 }
-.tabBar::-webkit-scrollbar { display: none; }
+
+.tabBar::-webkit-scrollbar {
+  display: none;
+}
 
 .tab {
   display: flex;
@@ -181,11 +190,13 @@
   transition: background 0.12s, color 0.12s;
   flex-shrink: 0;
 }
+
 .tab:hover {
   background: rgba(255, 255, 255, 0.04);
   color: rgba(230, 210, 165, 0.8);
 }
-.tab.tabActive {
+
+.tabActive {
   background: rgba(255, 140, 40, 0.09);
   color: rgba(255, 215, 140, 0.95);
   border-bottom: 1px solid rgba(255, 140, 40, 0.4);
@@ -208,6 +219,7 @@
   cursor: pointer;
   flex-shrink: 0;
 }
+
 .tabClose:hover {
   background: rgba(255, 80, 40, 0.2);
   color: rgba(255, 160, 120, 0.9);
@@ -228,7 +240,6 @@
   overflow: hidden;
 }
 
-/* ── 하단 섹션: 에이전트 + 캠프파이어 ── */
 .bottomSection {
   height: 180px;
   flex-shrink: 0;
@@ -240,26 +251,8 @@
 .campfireBottom {
   position: absolute;
   left: calc(50% - 70px);
-  top: 40px;   /* 180px - 140px = 40px from top */
+  top: 40px;
   pointer-events: auto;
   -webkit-app-region: no-drag;
   z-index: 1;
-}
-
-/* ── 채팅 오버레이 ── */
-.chatOverlay {
-  position: absolute;
-  bottom: 190px;    /* bottomSection (180) + gap (10) */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 420px;
-  height: 500px;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow:
-    0 0 0 1px rgba(255, 140, 40, 0.15),
-    0 12px 40px rgba(0, 0, 0, 0.65),
-    0 4px 16px rgba(0, 0, 0, 0.4);
-  z-index: 20;
-  pointer-events: auto;
 }

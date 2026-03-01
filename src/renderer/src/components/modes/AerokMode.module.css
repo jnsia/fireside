@@ -1,0 +1,105 @@
+.layout {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  background: rgba(5, 4, 3, 0.45);
+}
+
+.sidebar {
+  width: 320px;
+  border-right: 1px solid rgba(255, 140, 40, 0.12);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.sectionTitle {
+  font-size: 11px;
+  color: rgba(238, 208, 154, 0.6);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.materialSection {
+  border: 1px solid rgba(236, 72, 153, 0.24);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.16);
+  padding: 10px;
+}
+
+.materialHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: rgba(249, 168, 212, 0.92);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.addBtn,
+.deleteBtn {
+  border: 1px solid rgba(236, 72, 153, 0.34);
+  border-radius: 7px;
+  background: rgba(131, 24, 67, 0.2);
+  color: rgba(251, 207, 232, 0.95);
+  font-size: 11px;
+  padding: 3px 7px;
+  cursor: pointer;
+}
+
+.materialList {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.materialItem {
+  border: 1px solid rgba(236, 72, 153, 0.16);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: rgba(251, 207, 232, 0.9);
+  line-height: 1.45;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.editorHeader {
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(249, 168, 212, 0.95);
+}
+
+.editor {
+  flex: 1;
+  min-height: 0;
+  border: 1px solid rgba(236, 72, 153, 0.26);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(253, 242, 248, 0.92);
+  font-size: 15px;
+  line-height: 1.8;
+  padding: 18px;
+  resize: none;
+  outline: none;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+}
+
+.muted {
+  color: rgba(244, 114, 182, 0.62);
+  font-size: 12px;
+}
