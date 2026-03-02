@@ -55,7 +55,7 @@
 /* Live Editor Area */
 .editorWrapper {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 40px 60px;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 140, 40, 0.15) transparent;
@@ -64,6 +64,10 @@
 .editorWrapper::-webkit-scrollbar-thumb { background: rgba(255,140,40,0.15); border-radius: 2px; }
 
 .liveEditor {
+  height: 100%;
+  width: 100%;
+  border: none;
+  background: transparent;
   outline: none;
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   font-size: 16px;
@@ -72,6 +76,9 @@
   white-space: pre-wrap;
   word-wrap: break-word;
   min-height: 100%;
+  overflow-y: auto;
+  resize: none;
+  tab-size: 2;
 }
 
 /* Placeholder */
