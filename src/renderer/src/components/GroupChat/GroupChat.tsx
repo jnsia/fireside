@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AGENTS } from '../../agents'
+import { loadGroupChatState, saveGroupChatState } from '../../lib/firesideDataMd'
 import type { Message } from '../../types'
 import styles from './GroupChat.module.css'
 
@@ -15,22 +16,35 @@ interface TypingState {
 }
 
 export function GroupChat({ onClose, isPanel = false, onFilesChanged }: GroupChatProps) {
-  const [messages, setMessages] = useState<Message[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem('fireside-history') ?? '[]')
-    } catch {
-      return []
-    }
-  })
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [typing, setTyping] = useState<TypingState | null>(null)
   const [busy, setBusy] = useState(false)
   const [totalTokens, setTotalTokens] = useState(0)
+  const [hydrated, setHydrated] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    localStorage.setItem('fireside-history', JSON.stringify(messages))
-  }, [messages])
+    let mounted = true
+    loadGroupChatState({ messages: [], totalTokens: 0 })
+      .then((doc) => {
+        if (!mounted) return
+        setMessages(doc.messages ?? [])
+        setTotalTokens(doc.totalTokens ?? 0)
+      })
+      .finally(() => {
+        if (mounted) setHydrated(true)
+      })
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
+    saveGroupChatState({ messages, totalTokens }).catch(console.error)
+  }, [messages, totalTokens, hydrated])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -51,12 +65,11 @@ export function GroupChat({ onClose, isPanel = false, onFilesChanged }: GroupCha
     const userMsg: Message = { role: 'user', content: text, timestamp: Date.now() }
     let history = addMessage(userMsg, messages)
 
-    // 1. 기획자가 분석 → 필요한 전문가 선발
     setTyping({ agentId: 'planner' })
     try {
-      const apiHistory = history.map(m => ({ role: m.role, content: m.content }))
+      const apiHistory = history.map((m) => ({ role: m.role, content: m.content }))
       const plan = await window.api.planChat(apiHistory)
-      setTotalTokens(t => t + plan.tokens)
+      setTotalTokens((t) => t + plan.tokens)
 
       const plannerMsg: Message = {
         role: 'assistant',
@@ -66,13 +79,12 @@ export function GroupChat({ onClose, isPanel = false, onFilesChanged }: GroupCha
       }
       history = addMessage(plannerMsg, history)
 
-      // 2. 선발된 전문가들이 순서대로 답변
-      const specialists = plan.agents.filter(id => AGENTS.some(a => a.id === id))
+      const specialists = plan.agents.filter((id) => AGENTS.some((a) => a.id === id))
       for (const agentId of specialists) {
         setTyping({ agentId })
-        const apiMessages = history.map(m => ({ role: m.role, content: m.content }))
+        const apiMessages = history.map((m) => ({ role: m.role, content: m.content }))
         const result = await window.api.sendChat(agentId, apiMessages)
-        setTotalTokens(t => t + result.tokens)
+        setTotalTokens((t) => t + result.tokens)
         const msg: Message = {
           role: 'assistant',
           content: result.content,
@@ -80,6 +92,7 @@ export function GroupChat({ onClose, isPanel = false, onFilesChanged }: GroupCha
           timestamp: Date.now()
         }
         history = addMessage(msg, history)
+        if (result.filesChanged) onFilesChanged?.()
       }
     } catch (e) {
       console.error(e)
@@ -102,7 +115,7 @@ export function GroupChat({ onClose, isPanel = false, onFilesChanged }: GroupCha
         <span style={{ fontSize: 15 }}>🔥</span>
         <span className={styles.headerTitle}>Fireside Chat</span>
         <div className={styles.headerAgents}>
-          {AGENTS.map(a => (
+          {AGENTS.map((a) => (
             <div key={a.id} className={styles.agentDot} style={{ background: a.color }} />
           ))}
         </div>
@@ -111,7 +124,11 @@ export function GroupChat({ onClose, isPanel = false, onFilesChanged }: GroupCha
             {totalTokens.toLocaleString()} tok
           </span>
         )}
-        {!isPanel && <button className={styles.closeBtn} onClick={onClose}>✕</button>}
+        {!isPanel && (
+          <button className={styles.closeBtn} onClick={onClose}>
+            ✕
+          </button>
+        )}
       </div>
 
       <div className={styles.messages}>
@@ -126,25 +143,33 @@ export function GroupChat({ onClose, isPanel = false, onFilesChanged }: GroupCha
         {messages.map((msg, i) => {
           if (msg.role === 'user') {
             return (
-              <motion.div key={i} className={styles.userRow}
-                initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.18 }}>
+              <motion.div key={i} className={styles.userRow} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.18 }}>
                 <div className={styles.userBubble}>{msg.content}</div>
               </motion.div>
             )
           }
 
-          const agent = AGENTS.find(a => a.id === msg.agentId)
+          const agent = AGENTS.find((a) => a.id === msg.agentId)
 
           return (
-            <motion.div key={i} className={styles.agentRow}
-              initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}>
+            <motion.div key={i} className={styles.agentRow} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}>
               <div className={styles.agentAvatar} style={{ borderColor: `${agent?.color}44` }}>
-                {agent?.avatar && <img className={styles.avatarImg} src={agent.avatar} alt={agent.name}
-                  onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />}
+                {agent?.avatar && (
+                  <img
+                    className={styles.avatarImg}
+                    src={agent.avatar}
+                    alt={agent.name}
+                    onError={(e) => {
+                      ;(e.currentTarget as HTMLImageElement).style.display = 'none'
+                    }}
+                  />
+                )}
                 <span style={{ display: 'none', fontSize: 13 }}>{agent?.emoji}</span>
               </div>
               <div className={styles.agentBody}>
-                <span className={styles.agentName} style={{ color: agent?.color }}>{agent?.name}</span>
+                <span className={styles.agentName} style={{ color: agent?.color }}>
+                  {agent?.name}
+                </span>
                 <div className={styles.agentBubble}>{msg.content}</div>
               </div>
             </motion.div>
@@ -152,24 +177,32 @@ export function GroupChat({ onClose, isPanel = false, onFilesChanged }: GroupCha
         })}
 
         <AnimatePresence>
-          {typing && (() => {
-            const agent = AGENTS.find(a => a.id === typing.agentId)
-            return (
-              <motion.div key="typing" className={styles.typingRow}
-                initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-                <div className={styles.agentAvatar} style={{ borderColor: `${agent?.color}44` }}>
-                  {agent?.avatar && <img className={styles.avatarImg} src={agent.avatar} alt={agent.name}
-                    onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />}
-                  <span style={{ display: 'none', fontSize: 13 }}>{agent?.emoji}</span>
-                </div>
-                <div className={styles.typingBubble}>
-                  <div className={styles.typingDot} />
-                  <div className={styles.typingDot} />
-                  <div className={styles.typingDot} />
-                </div>
-              </motion.div>
-            )
-          })()}
+          {typing &&
+            (() => {
+              const agent = AGENTS.find((a) => a.id === typing.agentId)
+              return (
+                <motion.div key="typing" className={styles.typingRow} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+                  <div className={styles.agentAvatar} style={{ borderColor: `${agent?.color}44` }}>
+                    {agent?.avatar && (
+                      <img
+                        className={styles.avatarImg}
+                        src={agent.avatar}
+                        alt={agent.name}
+                        onError={(e) => {
+                          ;(e.currentTarget as HTMLImageElement).style.display = 'none'
+                        }}
+                      />
+                    )}
+                    <span style={{ display: 'none', fontSize: 13 }}>{agent?.emoji}</span>
+                  </div>
+                  <div className={styles.typingBubble}>
+                    <div className={styles.typingDot} />
+                    <div className={styles.typingDot} />
+                    <div className={styles.typingDot} />
+                  </div>
+                </motion.div>
+              )
+            })()}
         </AnimatePresence>
 
         <div ref={bottomRef} />
@@ -179,13 +212,15 @@ export function GroupChat({ onClose, isPanel = false, onFilesChanged }: GroupCha
         <textarea
           className={styles.input}
           value={input}
-          onChange={e => setInput(e.target.value)}
+          onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="메시지 입력 (Enter 전송)"
           rows={2}
           disabled={busy}
         />
-        <button className={styles.sendBtn} onClick={handleSend} disabled={busy || !input.trim()}>전송</button>
+        <button className={styles.sendBtn} onClick={handleSend} disabled={busy || !input.trim()}>
+          전송
+        </button>
       </div>
     </div>
   )

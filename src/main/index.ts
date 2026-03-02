@@ -257,6 +257,7 @@ ipcMain.handle('terminal:exec', async (_event, command: string, cwd?: string) =>
 
 // ── IPC: 파일시스템 ───────────────────────────────────────────────
 ipcMain.handle('fs:list-notes',  async () => walk(NEUROSTARS_PATH))
+ipcMain.handle('fs:neurostars-path', async () => NEUROSTARS_PATH)
 
 ipcMain.handle('fs:read-note',   async (_event, filePath: string) =>
   fs.readFileSync(filePath, 'utf-8'))

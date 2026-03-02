@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { loadJunjaState, saveJunjaState, type JunjaState } from '../../lib/firesideDataMd'
 import styles from './JunjaMode.module.css'
 
 interface GoalItem {
@@ -13,13 +14,6 @@ interface GameItem {
   shortcut: string
   description: string
 }
-
-interface JunjaState {
-  selectedGameId: string
-  goalsByGame: Record<string, GoalItem[]>
-}
-
-const STORAGE_KEY = 'fireside-junja-state'
 
 const GAMES: GameItem[] = [
   { id: 'steam', name: 'Steam', shortcut: 'steam://open/main', description: '스팀 라이브러리 바로 열기' },
@@ -45,22 +39,28 @@ function createGoalId() {
   return `goal-${Date.now()}-${Math.floor(Math.random() * 1000)}`
 }
 
-function loadState(): JunjaState {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '') as JunjaState
-    if (!parsed.selectedGameId) return DEFAULT_STATE
-    return parsed
-  } catch {
-    return DEFAULT_STATE
-  }
-}
-
 export function JunjaMode() {
-  const [state, setState] = useState<JunjaState>(() => loadState())
+  const [state, setState] = useState<JunjaState>(DEFAULT_STATE)
+  const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-  }, [state])
+    let mounted = true
+    loadJunjaState(DEFAULT_STATE)
+      .then((loaded) => {
+        if (mounted) setState(loaded)
+      })
+      .finally(() => {
+        if (mounted) setHydrated(true)
+      })
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
+    saveJunjaState(state).catch(console.error)
+  }, [state, hydrated])
 
   const selectedGame = useMemo(
     () => GAMES.find((game) => game.id === state.selectedGameId) ?? GAMES[0],
@@ -130,7 +130,13 @@ export function JunjaMode() {
             <label key={goal.id} className={styles.goalItem}>
               <input type="checkbox" checked={goal.done} onChange={() => toggleGoal(goal.id)} />
               <span className={goal.done ? styles.goalDone : ''}>{goal.text}</span>
-              <button className={styles.goalDelete} onClick={() => deleteGoal(goal.id)}>
+              <button
+                className={styles.goalDelete}
+                onClick={(event) => {
+                  event.preventDefault()
+                  deleteGoal(goal.id)
+                }}
+              >
                 삭제
               </button>
             </label>

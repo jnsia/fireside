@@ -10,6 +10,7 @@ import { AgentChat } from './components/AgentChat/AgentChat'
 import { SiaMode } from './components/modes/SiaMode'
 import { JunjaMode } from './components/modes/JunjaMode'
 import { AerokMode } from './components/modes/AerokMode'
+import { ensureFiresideScaffold } from './lib/firesideDataMd'
 import styles from './App.module.css'
 
 const COL_W = 80
@@ -81,6 +82,12 @@ export default function App() {
     })
     return () => unbind()
   }, [expanded, handleCollapse])
+
+  useEffect(() => {
+    ensureFiresideScaffold()
+      .then(() => setFileRefreshKey((prev) => prev + 1))
+      .catch(console.error)
+  }, [])
 
   const handleSelect = useCallback((note: NoteEntry) => {
     setTabs((prev) => {

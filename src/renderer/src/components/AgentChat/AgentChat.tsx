@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { loadAgentChatState, saveAgentChatState } from '../../lib/firesideDataMd'
 import type { Agent, Message } from '../../types'
 import styles from './AgentChat.module.css'
 
 const TOOL_LABELS: Record<string, string> = {
-  list_notes:  '📋 노트 목록 조회',
-  read_note:   '📖 노트 읽기',
-  write_note:  '✏️ 노트 수정',
-  new_note:    '📝 노트 생성',
-  delete_note: '🗑️ 노트 삭제',
+  list_notes: '📋 노트 목록 조회',
+  read_note: '📖 노트 읽기',
+  write_note: '✏️ 노트 수정',
+  new_note: '📝 노트 생성',
+  delete_note: '🗑️ 노트 삭제'
 }
 
 interface AgentChatProps {
@@ -19,19 +20,32 @@ interface AgentChatProps {
 }
 
 export function AgentChat({ agent, onClose, onFilesChanged, isPanel = false }: AgentChatProps) {
-  const storageKey = `fireside-chat-${agent.id}`
-
-  const [messages, setMessages] = useState<Message[]>(() => {
-    try { return JSON.parse(localStorage.getItem(storageKey) ?? '[]') } catch { return [] }
-  })
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [toolActions, setToolActions] = useState<string[]>([])
+  const [hydrated, setHydrated] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(messages))
-  }, [messages, storageKey])
+    let mounted = true
+    setHydrated(false)
+    loadAgentChatState(agent.id, { messages: [] })
+      .then((state) => {
+        if (mounted) setMessages(state.messages ?? [])
+      })
+      .finally(() => {
+        if (mounted) setHydrated(true)
+      })
+    return () => {
+      mounted = false
+    }
+  }, [agent.id])
+
+  useEffect(() => {
+    if (!hydrated) return
+    saveAgentChatState(agent.id, { messages }).catch(console.error)
+  }, [messages, hydrated, agent.id])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -49,7 +63,7 @@ export function AgentChat({ agent, onClose, onFilesChanged, isPanel = false }: A
     setMessages(history)
 
     try {
-      const apiHistory = history.map(m => ({ role: m.role, content: m.content }))
+      const apiHistory = history.map((m) => ({ role: m.role, content: m.content }))
       const result = await window.api.sendChat(agent.id, apiHistory)
 
       const agentMsg: Message = {
@@ -58,7 +72,7 @@ export function AgentChat({ agent, onClose, onFilesChanged, isPanel = false }: A
         agentId: agent.id,
         timestamp: Date.now()
       }
-      setMessages(prev => [...prev, agentMsg])
+      setMessages((prev) => [...prev, agentMsg])
 
       if (result.toolActions?.length) setToolActions(result.toolActions)
       if (result.filesChanged) onFilesChanged()
@@ -70,37 +84,54 @@ export function AgentChat({ agent, onClose, onFilesChanged, isPanel = false }: A
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
   }
 
-  const clearHistory = () => {
+  const clearHistory = async () => {
     setMessages([])
-    localStorage.removeItem(storageKey)
+    await saveAgentChatState(agent.id, { messages: [] })
   }
 
   return (
     <div className={styles.panel}>
-      {/* 헤더 */}
       <div className={styles.header} style={{ '--agent-color': agent.color } as React.CSSProperties}>
         <div className={styles.agentInfo}>
           <div className={styles.avatarWrap}>
-            {agent.avatar
-              ? <img className={styles.avatar} src={agent.avatar} alt={agent.name} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
-              : <span className={styles.emoji}>{agent.emoji}</span>
-            }
+            {agent.avatar ? (
+              <img
+                className={styles.avatar}
+                src={agent.avatar}
+                alt={agent.name}
+                onError={(e) => {
+                  ;(e.currentTarget as HTMLImageElement).style.display = 'none'
+                }}
+              />
+            ) : (
+              <span className={styles.emoji}>{agent.emoji}</span>
+            )}
           </div>
           <div>
-            <div className={styles.agentName} style={{ color: agent.color }}>{agent.name}</div>
+            <div className={styles.agentName} style={{ color: agent.color }}>
+              {agent.name}
+            </div>
             <div className={styles.agentRole}>{agent.role}</div>
           </div>
         </div>
         <div className={styles.headerActions}>
-          <button className={styles.clearBtn} onClick={clearHistory} title="대화 초기화">↺</button>
-          {!isPanel && <button className={styles.closeBtn} onClick={onClose}>✕</button>}
+          <button className={styles.clearBtn} onClick={clearHistory} title="대화 초기화">
+            ↺
+          </button>
+          {!isPanel && (
+            <button className={styles.closeBtn} onClick={onClose}>
+              ✕
+            </button>
+          )}
         </div>
       </div>
 
-      {/* 메시지 목록 */}
       <div className={styles.messages}>
         {messages.length === 0 && (
           <div className={styles.empty}>
@@ -113,15 +144,13 @@ export function AgentChat({ agent, onClose, onFilesChanged, isPanel = false }: A
         {messages.map((msg, i) => {
           if (msg.role === 'user') {
             return (
-              <motion.div key={i} className={styles.userRow}
-                initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.15 }}>
+              <motion.div key={i} className={styles.userRow} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.15 }}>
                 <div className={styles.userBubble}>{msg.content}</div>
               </motion.div>
             )
           }
           return (
-            <motion.div key={i} className={styles.agentRow}
-              initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.18 }}>
+            <motion.div key={i} className={styles.agentRow} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.18 }}>
               <div className={styles.agentBubble} style={{ '--agent-color': agent.color } as React.CSSProperties}>
                 {msg.content}
               </div>
@@ -129,24 +158,24 @@ export function AgentChat({ agent, onClose, onFilesChanged, isPanel = false }: A
           )
         })}
 
-        {/* 도구 액션 배지 */}
         <AnimatePresence>
           {toolActions.length > 0 && (
-            <motion.div className={styles.toolBadges}
-              initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              {[...new Set(toolActions)].map(t => (
-                <span key={t} className={styles.toolBadge}>{TOOL_LABELS[t] ?? t}</span>
+            <motion.div className={styles.toolBadges} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              {[...new Set(toolActions)].map((t) => (
+                <span key={t} className={styles.toolBadge}>
+                  {TOOL_LABELS[t] ?? t}
+                </span>
               ))}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* 타이핑 인디케이터 */}
         {busy && (
-          <motion.div className={styles.agentRow}
-            initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}>
+          <motion.div className={styles.agentRow} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}>
             <div className={styles.typingBubble}>
-              <span className={styles.dot} /><span className={styles.dot} /><span className={styles.dot} />
+              <span className={styles.dot} />
+              <span className={styles.dot} />
+              <span className={styles.dot} />
             </div>
           </motion.div>
         )}
@@ -154,12 +183,11 @@ export function AgentChat({ agent, onClose, onFilesChanged, isPanel = false }: A
         <div ref={bottomRef} />
       </div>
 
-      {/* 입력 */}
       <div className={styles.inputRow}>
         <textarea
           className={styles.input}
           value={input}
-          onChange={e => setInput(e.target.value)}
+          onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="메시지 입력 (Enter 전송, Shift+Enter 줄바꿈)"
           rows={2}
@@ -170,7 +198,9 @@ export function AgentChat({ agent, onClose, onFilesChanged, isPanel = false }: A
           style={{ '--agent-color': agent.color } as React.CSSProperties}
           onClick={handleSend}
           disabled={busy || !input.trim()}
-        >전송</button>
+        >
+          전송
+        </button>
       </div>
     </div>
   )

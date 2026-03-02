@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { loadSiaState, saveSiaState, type SiaState } from '../../lib/firesideDataMd'
 import styles from './SiaMode.module.css'
 
 type IssueStatus = 'todo' | 'in_progress' | 'done'
@@ -21,14 +22,6 @@ interface SiaIssue {
   title: string
   status: IssueStatus
 }
-
-interface SiaState {
-  projects: SiaProject[]
-  issues: SiaIssue[]
-  selectedProjectId: string
-}
-
-const STORAGE_KEY = 'fireside-sia-state'
 
 const DEFAULT_STATE: SiaState = {
   projects: [
@@ -61,23 +54,30 @@ function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`
 }
 
-function loadState(): SiaState {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '') as SiaState
-    if (!parsed.projects?.length) return DEFAULT_STATE
-    return parsed
-  } catch {
-    return DEFAULT_STATE
-  }
-}
-
 export function SiaMode() {
-  const [state, setState] = useState<SiaState>(() => loadState())
+  const [state, setState] = useState<SiaState>(DEFAULT_STATE)
   const [draggingIssueId, setDraggingIssueId] = useState<string | null>(null)
+  const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-  }, [state])
+    let mounted = true
+    loadSiaState(DEFAULT_STATE)
+      .then((loaded) => {
+        if (!mounted) return
+        setState(loaded)
+      })
+      .finally(() => {
+        if (mounted) setHydrated(true)
+      })
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
+    saveSiaState(state).catch(console.error)
+  }, [state, hydrated])
 
   const selectedProject =
     state.projects.find((project) => project.id === state.selectedProjectId) ?? state.projects[0] ?? null
@@ -156,15 +156,11 @@ export function SiaMode() {
     }))
   }
 
-  const ensureProjectSelected = () => {
+  useEffect(() => {
     if (selectedProject) return
     if (!state.projects[0]) return
     setState((prev) => ({ ...prev, selectedProjectId: prev.projects[0].id }))
-  }
-
-  useEffect(() => {
-    ensureProjectSelected()
-  }, [selectedProject])
+  }, [selectedProject, state.projects])
 
   if (!selectedProject) {
     return <div className={styles.empty}>프로젝트가 없습니다.</div>

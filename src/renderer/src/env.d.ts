@@ -12,6 +12,7 @@ interface Window {
     placeWindow: (x: number, y: number, w: number, h: number) => Promise<void>
     onBlur: (callback: () => void) => () => void
     terminalExec: (command: string, cwd?: string) => Promise<ExecResult>
+    neurostarsPath: () => Promise<string>
     listNotes:  () => Promise<NoteEntry[]>
     readNote:   (filePath: string) => Promise<string>
     writeNote:  (filePath: string, content: string) => Promise<void>

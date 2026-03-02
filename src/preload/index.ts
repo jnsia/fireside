@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.invoke('terminal:exec', command, cwd),
 
   // 파일시스템 (Neurostars)
+  neurostarsPath: () => ipcRenderer.invoke('fs:neurostars-path'),
   listNotes: () => ipcRenderer.invoke('fs:list-notes'),
   readNote: (filePath: string) => ipcRenderer.invoke('fs:read-note', filePath),
   writeNote: (filePath: string, content: string) => ipcRenderer.invoke('fs:write-note', filePath, content),

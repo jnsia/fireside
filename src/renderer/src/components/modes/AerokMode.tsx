@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { loadAerokState, saveAerokState, type AerokState } from '../../lib/firesideDataMd'
 import styles from './AerokMode.module.css'
 
 type MaterialType = 'word' | 'sentence' | 'quote'
@@ -8,13 +9,6 @@ interface MaterialItem {
   type: MaterialType
   text: string
 }
-
-interface AerokState {
-  materials: MaterialItem[]
-  draft: string
-}
-
-const STORAGE_KEY = 'fireside-aerok-state'
 
 const TYPE_LABEL: Record<MaterialType, string> = {
   word: '단어',
@@ -35,22 +29,28 @@ function createId() {
   return `mat-${Date.now()}-${Math.floor(Math.random() * 1000)}`
 }
 
-function loadState(): AerokState {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '') as AerokState
-    if (!Array.isArray(parsed.materials)) return DEFAULT_STATE
-    return parsed
-  } catch {
-    return DEFAULT_STATE
-  }
-}
-
 export function AerokMode() {
-  const [state, setState] = useState<AerokState>(() => loadState())
+  const [state, setState] = useState<AerokState>(DEFAULT_STATE)
+  const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-  }, [state])
+    let mounted = true
+    loadAerokState(DEFAULT_STATE)
+      .then((loaded) => {
+        if (mounted) setState(loaded)
+      })
+      .finally(() => {
+        if (mounted) setHydrated(true)
+      })
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
+    saveAerokState(state).catch(console.error)
+  }, [state, hydrated])
 
   const grouped = useMemo(
     () => ({
