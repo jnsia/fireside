@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import styles from "./MarkdownEditor.module.css";
 
 interface MarkdownEditorProps {
@@ -9,6 +9,7 @@ export function MarkdownEditor({ note }: MarkdownEditorProps) {
   const [content, setContent] = useState("");
   const [saved, setSaved] = useState(true);
   const editorRef = useRef<HTMLTextAreaElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 파일 로드
@@ -48,6 +49,12 @@ export function MarkdownEditor({ note }: MarkdownEditorProps) {
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     applyText(e.currentTarget.value);
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
+    if (!previewRef.current) return;
+    previewRef.current.scrollTop = e.currentTarget.scrollTop;
+    previewRef.current.scrollLeft = e.currentTarget.scrollLeft;
   };
 
   const replaceLine = (
@@ -171,6 +178,37 @@ export function MarkdownEditor({ note }: MarkdownEditorProps) {
 
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
 
+  const previewLines = useMemo(() => {
+    return content.split("\n").map((rawLine, index) => {
+      const line = rawLine;
+      let lineClass = styles.previewLine;
+
+      const heading = line.match(/^\t*(#{1,6})\s+(.*)$/);
+      if (heading) {
+        const level = Math.min(6, heading[1].length);
+        lineClass = `${styles.previewLine} ${styles[`heading${level}`]}`;
+      }
+
+      const checkbox = line.match(/^\t*- \[( |x|X)\]\s?(.*)$/);
+      if (checkbox) {
+        lineClass = `${styles.previewLine} ${styles.checkboxLine} ${
+          checkbox[1].toLowerCase() === "x" ? styles.checkboxLineChecked : ""
+        }`;
+      }
+
+      const bullet = line.match(/^\t*- (.*)$/);
+      if (!checkbox && bullet) {
+        lineClass = `${styles.previewLine} ${styles.bulletLine}`;
+      }
+
+      return (
+        <div key={`line-${index}`} className={lineClass}>
+          <span className={styles.previewText}>{line || " "}</span>
+        </div>
+      );
+    });
+  }, [content]);
+
   return (
     <div className={styles.panel}>
       {/* 툴바 */}
@@ -197,12 +235,16 @@ export function MarkdownEditor({ note }: MarkdownEditorProps) {
       {/* 본문 영역 (Live Editor) */}
       {note ? (
         <div className={styles.editorWrapper}>
+          <div ref={previewRef} className={styles.previewLayer} aria-hidden>
+            {previewLines}
+          </div>
           <textarea
             ref={editorRef}
             className={styles.liveEditor}
             value={content}
             onChange={handleInput}
             onKeyDown={handleKeyDown}
+            onScroll={handleScroll}
             spellCheck={false}
           />
         </div>

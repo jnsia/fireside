@@ -56,29 +56,92 @@
 .editorWrapper {
   flex: 1;
   overflow: hidden;
-  padding: 40px 60px;
+  position: relative;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 140, 40, 0.15) transparent;
 }
 .editorWrapper::-webkit-scrollbar { width: 4px; }
 .editorWrapper::-webkit-scrollbar-thumb { background: rgba(255,140,40,0.15); border-radius: 2px; }
 
+.previewLayer {
+  position: absolute;
+  inset: 0;
+  padding: 40px 60px;
+  box-sizing: border-box;
+  overflow: auto;
+  pointer-events: none;
+  color: rgba(240, 230, 210, 0.94);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  tab-size: 2;
+}
+
 .liveEditor {
-  height: 100%;
-  width: 100%;
+  position: absolute;
+  inset: 0;
+  padding: 40px 60px;
+  box-sizing: border-box;
   border: none;
   background: transparent;
+  z-index: 1;
   outline: none;
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.8;
-  color: rgba(240, 230, 210, 0.9);
+  color: transparent;
+  caret-color: rgba(255, 226, 176, 0.96);
   white-space: pre-wrap;
   word-wrap: break-word;
-  min-height: 100%;
+  overflow-x: auto;
   overflow-y: auto;
   resize: none;
   tab-size: 2;
+}
+
+.liveEditor::selection {
+  background: rgba(255, 156, 63, 0.22);
+  color: transparent;
+}
+
+.previewLine {
+  min-height: 1.8em;
+  display: block;
+}
+
+.previewText {
+  display: block;
+}
+
+.heading1,
+.heading2,
+.heading3,
+.heading4,
+.heading5,
+.heading6 {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.heading1 { color: rgba(255, 225, 176, 0.98); }
+.heading2 { color: rgba(255, 218, 168, 0.97); }
+.heading3 { color: rgba(255, 212, 160, 0.95); }
+.heading4 { color: rgba(255, 206, 151, 0.94); }
+.heading5 { color: rgba(252, 202, 149, 0.92); }
+.heading6 { color: rgba(242, 196, 146, 0.88); }
+
+.bulletLine {
+  color: rgba(246, 218, 173, 0.96);
+}
+
+.checkboxLine {
+  color: rgba(241, 214, 168, 0.95);
+}
+
+.checkboxLineChecked {
+  color: rgba(188, 214, 178, 0.95);
 }
 
 /* Placeholder */
