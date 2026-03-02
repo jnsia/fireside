@@ -301,8 +301,16 @@ export async function saveGroupChatState(state: GroupChatState): Promise<void> {
 }
 
 export async function ensureFiresideScaffold(): Promise<void> {
-  if (!(await readDataFile('sia/projects/index.md'))) await saveSiaState({ projects: [], issues: [], selectedProjectId: '' })
-  if (!(await readDataFile('junja/goals/index.md'))) await saveJunjaState({ selectedGameId: 'steam', goalsByGame: {} })
+  if (!(await readDataFile('sia/projects/index.md'))) {
+    await saveSiaState({
+      projects: [{ id: 'proj-fireside', name: 'Fireside', sprint: { active: false, startedAt: null, endedAt: null } }],
+      issues: [],
+      selectedProjectId: 'proj-fireside'
+    })
+  }
+  if (!(await readDataFile('junja/goals/index.md'))) {
+    await saveJunjaState({ selectedGameId: 'steam', goalsByGame: { steam: [], epic: [], xbox: [], riot: [] } })
+  }
   if (!(await readDataFile('aerok/materials/index.md'))) await saveAerokState({ materials: [], draft: '' })
   if (!(await readDataFile('chat/group.md'))) await saveGroupChatState({ messages: [], totalTokens: 0 })
   for (const id of ['sia', 'aerok', 'junja']) {

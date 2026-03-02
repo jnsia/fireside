@@ -42,6 +42,7 @@ function createGoalId() {
 export function JunjaMode() {
   const [state, setState] = useState<JunjaState>(DEFAULT_STATE)
   const [hydrated, setHydrated] = useState(false)
+  const [newGoalText, setNewGoalText] = useState('')
 
   useEffect(() => {
     let mounted = true
@@ -81,8 +82,8 @@ export function JunjaMode() {
     }))
   }
 
-  const addGoal = () => {
-    const text = window.prompt(`${selectedGame.name} 목표를 입력하세요`)?.trim()
+  const addGoal = (rawText?: string) => {
+    const text = (rawText ?? '').trim()
     if (!text) return
     setState((prev) => ({
       ...prev,
@@ -143,9 +144,28 @@ export function JunjaMode() {
           ))}
         </div>
 
-        <button className={styles.addBtn} onClick={addGoal}>
-          목표 추가
-        </button>
+        <div className={styles.inlineAdd}>
+          <input
+            className={styles.inlineInput}
+            value={newGoalText}
+            onChange={(event) => setNewGoalText(event.target.value)}
+            placeholder={`${selectedGame.name} 퀘스트 입력`}
+            onKeyDown={(event) => {
+              if (event.key !== 'Enter') return
+              addGoal(newGoalText)
+              setNewGoalText('')
+            }}
+          />
+          <button
+            className={styles.addBtn}
+            onClick={() => {
+              addGoal(newGoalText)
+              setNewGoalText('')
+            }}
+          >
+            목표 추가
+          </button>
+        </div>
       </aside>
 
       <main className={styles.main}>

@@ -32,6 +32,11 @@ function createId() {
 export function AerokMode() {
   const [state, setState] = useState<AerokState>(DEFAULT_STATE)
   const [hydrated, setHydrated] = useState(false)
+  const [drafts, setDrafts] = useState<Record<MaterialType, string>>({
+    word: '',
+    sentence: '',
+    quote: ''
+  })
 
   useEffect(() => {
     let mounted = true
@@ -61,8 +66,8 @@ export function AerokMode() {
     [state.materials]
   )
 
-  const addMaterial = (type: MaterialType) => {
-    const text = window.prompt(`${TYPE_LABEL[type]} 추가`)?.trim()
+  const addMaterial = (type: MaterialType, rawText?: string) => {
+    const text = (rawText ?? '').trim()
     if (!text) return
     setState((prev) => ({
       ...prev,
@@ -85,10 +90,34 @@ export function AerokMode() {
           <section key={type} className={styles.materialSection}>
             <header className={styles.materialHeader}>
               <span>{TYPE_LABEL[type]}</span>
-              <button className={styles.addBtn} onClick={() => addMaterial(type)}>
-                +
-              </button>
             </header>
+            <div className={styles.inlineAdd}>
+              <input
+                className={styles.inlineInput}
+                value={drafts[type]}
+                placeholder={`${TYPE_LABEL[type]} 입력`}
+                onChange={(event) =>
+                  setDrafts((prev) => ({
+                    ...prev,
+                    [type]: event.target.value
+                  }))
+                }
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter') return
+                  addMaterial(type, drafts[type])
+                  setDrafts((prev) => ({ ...prev, [type]: '' }))
+                }}
+              />
+              <button
+                className={styles.addBtn}
+                onClick={() => {
+                  addMaterial(type, drafts[type])
+                  setDrafts((prev) => ({ ...prev, [type]: '' }))
+                }}
+              >
+                추가
+              </button>
+            </div>
             <div className={styles.materialList}>
               {grouped[type].length === 0 && <div className={styles.muted}>없음</div>}
               {grouped[type].map((item) => (

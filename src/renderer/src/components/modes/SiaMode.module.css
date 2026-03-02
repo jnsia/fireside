@@ -96,6 +96,22 @@
   gap: 8px;
 }
 
+.inlineAdd {
+  display: grid;
+  gap: 6px;
+}
+
+.inlineInput {
+  width: 100%;
+  border: 1px solid rgba(255, 170, 90, 0.28);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  color: rgba(245, 225, 190, 0.92);
+  padding: 8px 9px;
+  font-size: 12px;
+  outline: none;
+}
+
 .actionBtn {
   border: 1px solid rgba(255, 140, 40, 0.24);
   background: rgba(255, 255, 255, 0.04);
@@ -229,6 +245,8 @@
 .columnFooter {
   border-top: 1px solid rgba(255, 140, 40, 0.12);
   padding: 8px;
+  display: grid;
+  gap: 6px;
 }
 
 .footerAddBtn {

@@ -49,6 +49,24 @@
   cursor: pointer;
 }
 
+.inlineAdd {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+}
+
+.inlineInput {
+  width: 100%;
+  border: 1px solid rgba(236, 72, 153, 0.35);
+  border-radius: 7px;
+  background: rgba(80, 7, 36, 0.22);
+  color: rgba(253, 242, 248, 0.95);
+  padding: 6px 8px;
+  font-size: 12px;
+  outline: none;
+}
+
 .materialList {
   margin-top: 8px;
   display: flex;

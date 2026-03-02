@@ -58,6 +58,12 @@ export function SiaMode() {
   const [state, setState] = useState<SiaState>(DEFAULT_STATE)
   const [draggingIssueId, setDraggingIssueId] = useState<string | null>(null)
   const [hydrated, setHydrated] = useState(false)
+  const [sidebarIssueTitle, setSidebarIssueTitle] = useState('')
+  const [columnDraft, setColumnDraft] = useState<Record<IssueStatus, string>>({
+    todo: '',
+    in_progress: '',
+    done: ''
+  })
 
   useEffect(() => {
     let mounted = true
@@ -119,9 +125,9 @@ export function SiaMode() {
     }))
   }
 
-  const addIssue = (status: IssueStatus = 'todo') => {
+  const addIssue = (status: IssueStatus = 'todo', rawTitle?: string) => {
     if (!selectedProject) return
-    const title = window.prompt('새 이슈 제목을 입력하세요')?.trim()
+    const title = (rawTitle ?? '').trim()
     if (!title) return
 
     setState((prev) => ({
@@ -206,9 +212,28 @@ export function SiaMode() {
           <button className={styles.actionBtn} onClick={handleEndSprint} disabled={!selectedProject.sprint.active}>
             스프린트 마감
           </button>
-          <button className={styles.actionBtn} onClick={() => addIssue('todo')}>
-            이슈 추가
-          </button>
+          <div className={styles.inlineAdd}>
+            <input
+              className={styles.inlineInput}
+              value={sidebarIssueTitle}
+              onChange={(event) => setSidebarIssueTitle(event.target.value)}
+              placeholder="새 이슈 제목"
+              onKeyDown={(event) => {
+                if (event.key !== 'Enter') return
+                addIssue('todo', sidebarIssueTitle)
+                setSidebarIssueTitle('')
+              }}
+            />
+            <button
+              className={styles.actionBtn}
+              onClick={() => {
+                addIssue('todo', sidebarIssueTitle)
+                setSidebarIssueTitle('')
+              }}
+            >
+              이슈 추가
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -233,7 +258,13 @@ export function SiaMode() {
             <button className={styles.actionBtn} onClick={handleEndSprint} disabled={!selectedProject.sprint.active}>
               스프린트 마감
             </button>
-            <button className={styles.actionBtn} onClick={() => addIssue('todo')}>
+            <button
+              className={styles.actionBtn}
+              onClick={() => {
+                addIssue('todo', sidebarIssueTitle)
+                setSidebarIssueTitle('')
+              }}
+            >
               이슈 추가
             </button>
           </div>
@@ -281,7 +312,29 @@ export function SiaMode() {
                 </div>
 
                 <footer className={styles.columnFooter}>
-                  <button className={styles.footerAddBtn} onClick={() => addIssue(status)}>
+                  <input
+                    className={styles.inlineInput}
+                    value={columnDraft[status]}
+                    placeholder={`${STATUS_META[status].label} 이슈 입력`}
+                    onChange={(event) =>
+                      setColumnDraft((prev) => ({
+                        ...prev,
+                        [status]: event.target.value
+                      }))
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key !== 'Enter') return
+                      addIssue(status, columnDraft[status])
+                      setColumnDraft((prev) => ({ ...prev, [status]: '' }))
+                    }}
+                  />
+                  <button
+                    className={styles.footerAddBtn}
+                    onClick={() => {
+                      addIssue(status, columnDraft[status])
+                      setColumnDraft((prev) => ({ ...prev, [status]: '' }))
+                    }}
+                  >
                     + 이 열에 추가
                   </button>
                 </footer>
