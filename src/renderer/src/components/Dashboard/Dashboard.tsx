@@ -7,6 +7,12 @@ interface TimelineItem {
   completed: boolean;
 }
 
+interface TodoItem {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
 interface DashboardProps {
   refreshKey?: number;
 }
@@ -14,6 +20,7 @@ interface DashboardProps {
 export function Dashboard({ refreshKey }: DashboardProps) {
   const [now, setNow] = useState(new Date());
   const [timeline, setTimeline] = useState<TimelineItem[]>([]);
+  const [todos, setTodos] = useState<TodoItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 1. 날짜 관련 계산
@@ -28,6 +35,7 @@ export function Dashboard({ refreshKey }: DashboardProps) {
     const dd = String(d.getDate()).padStart(2, "0");
     return `${yy}${mm}${dd}`;
   };
+  const todayKey = getYYMMDD(now);
 
   // 2. 타임라인 데이터 로드
   const fetchTimeline = useCallback(async () => {
@@ -43,33 +51,59 @@ export function Dashboard({ refreshKey }: DashboardProps) {
       if (dailyNote) {
         const content = await window.api.readNote(dailyNote.filePath);
         const lines = content.split("\n");
-        const items: TimelineItem[] = [];
+        const timelineItems: TimelineItem[] = [];
+        const todoItems: TodoItem[] = [];
         let inSchedule = false;
+        let inTodo = false;
 
-        for (const line of lines) {
+        for (let i = 0; i < lines.length; i += 1) {
+          const line = lines[i];
+          const trimmed = line.trim();
+
           if (line.includes("## Schedule")) {
             inSchedule = true;
+            inTodo = false;
             continue;
           }
-          if (inSchedule && line.startsWith("## ")) {
+          if (/^##\s+(Todo|To-do|Tasks|Task|할 일)\s*$/i.test(trimmed)) {
+            inTodo = true;
             inSchedule = false;
-            break;
+            continue;
           }
-          if (inSchedule && line.trim().startsWith("- [")) {
+          if (trimmed.startsWith("## ")) {
+            inSchedule = false;
+            inTodo = false;
+          }
+
+          if (inSchedule && trimmed.startsWith("- [")) {
             // 형식: - [x] 07:50 - 08:20 기상 / 준비
             const match = line.match(/- \[(x| )\] ([\d: \-]+) (.*)/);
             if (match) {
-              items.push({
+              timelineItems.push({
                 completed: match[1] === "x",
                 time: match[2].trim(),
                 content: match[3].trim(),
               });
             }
           }
+
+          if (inTodo && trimmed.startsWith("- [")) {
+            const match = trimmed.match(/^- \[(x| )\]\s+(.*)$/i);
+            if (match) {
+              todoItems.push({
+                id: `todo-${i}`,
+                done: match[1].toLowerCase() === "x",
+                text: match[2].trim(),
+              });
+            }
+          }
         }
-        setTimeline(items);
+
+        setTimeline(timelineItems);
+        setTodos(todoItems);
       } else {
         setTimeline([]);
+        setTodos([]);
       }
     } catch (e) {
       console.error("Failed to fetch timeline:", e);
@@ -159,6 +193,25 @@ export function Dashboard({ refreshKey }: DashboardProps) {
           ) : (
             <div className={styles.empty}>오늘의 일정이 없습니다.</div>
           )}
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.header}>
+          <span className={styles.title}>할 일 목록</span>
+          <span className={styles.subtitle}>{todayKey}</span>
+        </div>
+
+        <div className={styles.todoList}>
+          {todos.length === 0 && <div className={styles.empty}>마크다운 할 일이 없습니다.</div>}
+          {todos.map((todo) => (
+            <div key={todo.id} className={styles.todoItem}>
+              <label className={styles.todoLabel}>
+                <input type="checkbox" checked={todo.done} readOnly />
+                <span className={todo.done ? styles.todoDone : ""}>{todo.text}</span>
+              </label>
+            </div>
+          ))}
         </div>
       </section>
     </div>

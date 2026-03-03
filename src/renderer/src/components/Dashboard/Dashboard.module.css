@@ -5,9 +5,7 @@
   padding: 20px;
   gap: 30px;
   overflow-y: auto;
-  scrollbar-width: none;
 }
-.container::-webkit-scrollbar { display: none; }
 
 .section {
   display: flex;
@@ -142,4 +140,41 @@
   font-size: 12px;
   color: rgba(245, 215, 160, 0.3);
   font-style: italic;
+}
+
+.todoList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.todoItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid rgba(255, 140, 40, 0.12);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.12);
+  padding: 8px 10px;
+}
+
+.todoLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 12px;
+  color: rgba(245, 215, 160, 0.88);
+}
+
+.todoLabel span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.todoDone {
+  color: rgba(245, 215, 160, 0.42);
+  text-decoration: line-through;
 }
