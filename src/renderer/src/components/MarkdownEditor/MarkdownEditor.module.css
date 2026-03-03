@@ -115,6 +115,18 @@
   display: block;
 }
 
+.indentToken {
+  white-space: pre;
+}
+
+.syntaxToken {
+  color: rgba(224, 190, 139, 0.55);
+}
+
+.listToken {
+  color: rgba(255, 187, 107, 0.72);
+}
+
 .heading1,
 .heading2,
 .heading3,
@@ -142,6 +154,39 @@
 
 .checkboxLineChecked {
   color: rgba(188, 214, 178, 0.95);
+}
+
+.quoteLine {
+  color: rgba(205, 225, 255, 0.9);
+}
+
+.codeFenceLine {
+  color: rgba(167, 197, 227, 0.86);
+  background: rgba(16, 24, 36, 0.54);
+  border-radius: 6px;
+}
+
+.codeBlockLine {
+  color: rgba(211, 230, 246, 0.93);
+  background: rgba(16, 24, 36, 0.38);
+}
+
+.hrLine {
+  color: rgba(208, 176, 132, 0.56);
+}
+
+.inlineCode {
+  color: rgba(198, 230, 255, 0.95);
+  background: rgba(49, 72, 96, 0.45);
+  border-radius: 4px;
+  padding: 0 2px;
+}
+
+.inlineLink {
+  color: rgba(138, 201, 255, 0.96);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
 
 /* Placeholder */
