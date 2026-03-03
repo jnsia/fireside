@@ -73,6 +73,7 @@ export interface JunjaState {
 
 export interface AerokState {
   materials: { id: string; type: 'word' | 'sentence' | 'quote'; text: string }[]
+  writings: { id: string; title: string; content: string; updatedAt: number }[]
   draft: string
 }
 
@@ -222,9 +223,24 @@ export async function loadAerokState(fallback: AerokState): Promise<AerokState> 
         }))
       : fallback.materials
 
+  const writingsSection = parseBlockSection(content, 'Writings')
+  const writingMatches = Array.from(
+    writingsSection.matchAll(/- id: (.+)\n  title: (.*)\n  updated_at: (\d+)\n```text\n([\s\S]*?)\n```/g)
+  )
+
+  const writings =
+    writingMatches.length > 0
+      ? writingMatches.map((m) => ({
+          id: m[1].trim(),
+          title: fromLineValue(m[2]),
+          updatedAt: Number(m[3]),
+          content: m[4]
+        }))
+      : fallback.writings
+
   const draft = content.match(/## Draft\n```text\n([\s\S]*?)\n```/)?.[1] ?? fallback.draft
 
-  return { materials, draft }
+  return { materials, writings, draft }
 }
 
 export async function saveAerokState(state: AerokState): Promise<void> {
@@ -232,11 +248,20 @@ export async function saveAerokState(state: AerokState): Promise<void> {
     .map((m) => `- id: ${m.id}\n  type: ${m.type}\n  text: ${toLineValue(m.text)}`)
     .join('\n\n')
 
+  const writings = state.writings
+    .map(
+      (w) => `- id: ${w.id}\n  title: ${toLineValue(w.title)}\n  updated_at: ${w.updatedAt}\n\`\`\`text\n${w.content}\n\`\`\``
+    )
+    .join('\n\n')
+
   const md = [
     '# Aerok Materials',
     '',
     '## Materials',
     materials || '- id: ',
+    '',
+    '## Writings',
+    writings || '- id: ',
     '',
     '## Draft',
     '```text',
@@ -311,7 +336,7 @@ export async function ensureFiresideScaffold(): Promise<void> {
   if (!(await readDataFile('junja/goals/index.md'))) {
     await saveJunjaState({ selectedGameId: 'steam', goalsByGame: { steam: [], epic: [], xbox: [], riot: [] } })
   }
-  if (!(await readDataFile('aerok/materials/index.md'))) await saveAerokState({ materials: [], draft: '' })
+  if (!(await readDataFile('aerok/materials/index.md'))) await saveAerokState({ materials: [], writings: [], draft: '' })
   if (!(await readDataFile('chat/group.md'))) await saveGroupChatState({ messages: [], totalTokens: 0 })
   for (const id of ['sia', 'aerok', 'junja']) {
     if (!(await readDataFile(`chat/agent-${id}.md`))) await saveAgentChatState(id, { messages: [] })

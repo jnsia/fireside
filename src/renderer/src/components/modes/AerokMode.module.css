@@ -29,6 +29,12 @@
   padding: 10px;
 }
 
+.writingActions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+}
+
 .materialHeader {
   display: flex;
   justify-content: space-between;
@@ -46,6 +52,16 @@
   color: rgba(251, 207, 232, 0.95);
   font-size: 11px;
   padding: 3px 7px;
+  cursor: pointer;
+}
+
+.secondaryBtn {
+  border: 1px solid rgba(236, 72, 153, 0.28);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(251, 207, 232, 0.8);
+  font-size: 11px;
+  padding: 3px 8px;
   cursor: pointer;
 }
 
@@ -74,6 +90,59 @@
   gap: 7px;
 }
 
+.writingList {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.writingItem {
+  width: 100%;
+  border: 1px solid rgba(236, 72, 153, 0.16);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.12);
+  padding: 8px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.writingItemActive {
+  border-color: rgba(236, 72, 153, 0.42);
+  background: rgba(131, 24, 67, 0.25);
+}
+
+.writingTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(251, 207, 232, 0.95);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.writingMeta {
+  font-size: 10px;
+  color: rgba(251, 207, 232, 0.5);
+}
+
+.writingDelete {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  color: rgba(244, 114, 182, 0.8);
+  justify-self: end;
+  padding: 2px 4px;
+  border-radius: 5px;
+}
+
+.writingDelete:hover {
+  background: rgba(236, 72, 153, 0.2);
+}
+
 .materialItem {
   border: 1px solid rgba(236, 72, 153, 0.16);
   border-radius: 8px;
@@ -97,9 +166,19 @@
 }
 
 .editorHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
   font-size: 16px;
   font-weight: 700;
   color: rgba(249, 168, 212, 0.95);
+}
+
+.editorSub {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(251, 207, 232, 0.58);
 }
 
 .editor {
