@@ -5,6 +5,9 @@
   --bg-deep:       rgba(6, 3, 1, 0.82);
   --text-primary:  rgba(245, 220, 175, 0.92);
   --text-dim:      rgba(200, 165, 110, 0.5);
+  --scroll-track:  rgba(0, 0, 0, 0.18);
+  --scroll-thumb:  rgba(255, 140, 40, 0.36);
+  --scroll-thumb-hover: rgba(255, 166, 88, 0.52);
 }
 
 * {
@@ -27,4 +30,28 @@ html, body {
   background: transparent;
   font-family: 'Pretendard', -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scroll-track);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 140, 40, 0.14);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-thumb-hover);
 }
