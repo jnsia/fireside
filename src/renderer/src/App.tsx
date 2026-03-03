@@ -63,16 +63,20 @@ export default function App() {
     const x = Math.round((window.screen.availWidth - EXP_W) / 2)
     const y = Math.round((window.screen.availHeight - EXP_H) / 2)
     window.api.setWindowMode('window')
-    window.api.placeWindow(x, y, EXP_W, EXP_H)
     setExpanded(true)
+    window.api.animatePlaceWindow(x, y, EXP_W, EXP_H, 240)
   }, [])
 
   const handleCollapse = useCallback(() => {
     const x = Math.round((window.screen.availWidth - COL_W) / 2)
     const y = window.screen.availHeight - COL_H - 40
-    window.api.setWindowMode('overlay')
-    window.api.placeWindow(x, y, COL_W, COL_H)
-    setExpanded(false)
+    window.api
+      .animatePlaceWindow(x, y, COL_W, COL_H, 200)
+      .catch(() => undefined)
+      .finally(() => {
+        window.api.setWindowMode('overlay')
+        setExpanded(false)
+      })
   }, [])
 
   useEffect(() => {

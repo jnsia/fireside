@@ -2,7 +2,7 @@ import { config } from 'dotenv'
 import { join } from 'path'
 config({ path: join(process.cwd(), '.env') })
 
-import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron'
+import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen } from 'electron'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import fs from 'fs'
@@ -16,6 +16,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 
 let mainWindow: BrowserWindow | null = null
 let tray: Tray | null = null
+let windowAnimationTimer: NodeJS.Timeout | null = null
 
 // ── 파일시스템 헬퍼 ────────────────────────────────────────────────
 function walk(dir: string): { name: string; filePath: string; rel: string }[] {
@@ -153,7 +154,6 @@ async function executeFsTool(name: string, args: Record<string, string>): Promis
 
 // ── Electron 창 ───────────────────────────────────────────────────
 function createWindow(): void {
-  const { screen } = require('electron')
   const primaryDisplay = screen.getPrimaryDisplay()
   const { width, height } = primaryDisplay.workAreaSize
 
@@ -186,6 +186,62 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+}
+
+function clampWindowBounds(x: number, y: number, width: number, height: number) {
+  const { workArea } = screen.getPrimaryDisplay()
+  const cx = Math.max(workArea.x, Math.min(x, workArea.x + workArea.width - width))
+  const cy = Math.max(workArea.y, Math.min(y, workArea.y + workArea.height - height))
+  return { x: cx, y: cy, width, height }
+}
+
+function easeOutCubic(t: number) {
+  return 1 - Math.pow(1 - t, 3)
+}
+
+function animateWindowTo(x: number, y: number, width: number, height: number, durationMs = 220) {
+  return new Promise<void>((resolve) => {
+    if (!mainWindow) {
+      resolve()
+      return
+    }
+
+    const target = clampWindowBounds(x, y, width, height)
+    const from = mainWindow.getBounds()
+    const startedAt = Date.now()
+
+    if (windowAnimationTimer) {
+      clearInterval(windowAnimationTimer)
+      windowAnimationTimer = null
+    }
+
+    windowAnimationTimer = setInterval(() => {
+      if (!mainWindow) {
+        if (windowAnimationTimer) clearInterval(windowAnimationTimer)
+        windowAnimationTimer = null
+        resolve()
+        return
+      }
+
+      const elapsed = Date.now() - startedAt
+      const progress = Math.min(elapsed / durationMs, 1)
+      const eased = easeOutCubic(progress)
+      const next = {
+        x: Math.round(from.x + (target.x - from.x) * eased),
+        y: Math.round(from.y + (target.y - from.y) * eased),
+        width: Math.round(from.width + (target.width - from.width) * eased),
+        height: Math.round(from.height + (target.height - from.height) * eased)
+      }
+      mainWindow.setBounds(next, false)
+
+      if (progress >= 1) {
+        mainWindow.setBounds(target, true)
+        if (windowAnimationTimer) clearInterval(windowAnimationTimer)
+        windowAnimationTimer = null
+        resolve()
+      }
+    }, 1000 / 60)
+  })
 }
 
 function createTray(): void {
@@ -234,10 +290,11 @@ ipcMain.handle('window:set-mode', (_event, mode: 'overlay' | 'window') => {
 
 ipcMain.handle('window:place', (_event, x: number, y: number, w: number, h: number) => {
   if (!mainWindow) return
-  const { workArea } = require('electron').screen.getPrimaryDisplay()
-  const cx = Math.max(workArea.x, Math.min(x, workArea.x + workArea.width  - w))
-  const cy = Math.max(workArea.y, Math.min(y, workArea.y + workArea.height - h))
-  mainWindow.setBounds({ x: cx, y: cy, width: w, height: h }, true)
+  mainWindow.setBounds(clampWindowBounds(x, y, w, h), true)
+})
+
+ipcMain.handle('window:animate-place', async (_event, x: number, y: number, w: number, h: number, durationMs?: number) => {
+  await animateWindowTo(x, y, w, h, Math.max(120, Math.min(durationMs ?? 220, 600)))
 })
 
 // ── IPC: 터미널 ───────────────────────────────────────────────────

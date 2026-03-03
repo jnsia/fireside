@@ -12,6 +12,8 @@ contextBridge.exposeInMainWorld('api', {
 
   placeWindow: (x: number, y: number, w: number, h: number) =>
     ipcRenderer.invoke('window:place', x, y, w, h),
+  animatePlaceWindow: (x: number, y: number, w: number, h: number, durationMs?: number) =>
+    ipcRenderer.invoke('window:animate-place', x, y, w, h, durationMs),
 
   onBlur: (callback: () => void) => {
     const listener = () => callback()

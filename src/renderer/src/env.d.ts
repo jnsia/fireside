@@ -10,6 +10,7 @@ interface Window {
     sendChat: (agentId: string, messages: { role: string; content: string }[]) => Promise<ChatResult>
     setWindowMode: (mode: 'overlay' | 'window') => Promise<void>
     placeWindow: (x: number, y: number, w: number, h: number) => Promise<void>
+    animatePlaceWindow: (x: number, y: number, w: number, h: number, durationMs?: number) => Promise<void>
     onBlur: (callback: () => void) => () => void
     terminalExec: (command: string, cwd?: string) => Promise<ExecResult>
     neurostarsPath: () => Promise<string>
