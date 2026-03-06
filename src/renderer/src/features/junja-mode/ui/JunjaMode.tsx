@@ -1,14 +1,15 @@
-import { useEffect, useMemo, useState } from 'react'
-import { loadJunjaState, saveJunjaState, type JunjaState } from '../../lib/firesideDataMd'
+import { useMemo, useState } from 'react'
+import { loadJunjaState, saveJunjaState, type JunjaState } from '@shared/lib/firesideDataMd'
+import { useMarkdownState } from '@shared/hooks/useMarkdownState'
 import styles from './JunjaMode.module.css'
 
-interface GoalItem {
+type GoalItem = {
   id: string
   text: string
   done: boolean
 }
 
-interface GameItem {
+type GameItem = {
   id: string
   name: string
   shortcut: string
@@ -40,28 +41,8 @@ function createGoalId() {
 }
 
 export function JunjaMode() {
-  const [state, setState] = useState<JunjaState>(DEFAULT_STATE)
-  const [hydrated, setHydrated] = useState(false)
+  const [state, setState] = useMarkdownState(loadJunjaState, saveJunjaState, DEFAULT_STATE)
   const [newGoalText, setNewGoalText] = useState('')
-
-  useEffect(() => {
-    let mounted = true
-    loadJunjaState(DEFAULT_STATE)
-      .then((loaded) => {
-        if (mounted) setState(loaded)
-      })
-      .finally(() => {
-        if (mounted) setHydrated(true)
-      })
-    return () => {
-      mounted = false
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!hydrated) return
-    saveJunjaState(state).catch(console.error)
-  }, [state, hydrated])
 
   const selectedGame = useMemo(
     () => GAMES.find((game) => game.id === state.selectedGameId) ?? GAMES[0],

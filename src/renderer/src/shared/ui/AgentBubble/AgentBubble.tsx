@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import type { Agent } from '../../types'
+import type { Agent } from '@shared/types'
 import styles from './AgentBubble.module.css'
 
 interface AgentBubbleProps {

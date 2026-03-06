@@ -1,22 +1,23 @@
 import { useEffect, useMemo, useState } from 'react'
-import { loadSiaState, saveSiaState, type SiaState } from '../../lib/firesideDataMd'
+import { loadSiaState, saveSiaState, type SiaState } from '@shared/lib/firesideDataMd'
+import { useMarkdownState } from '@shared/hooks/useMarkdownState'
 import styles from './SiaMode.module.css'
 
 type IssueStatus = 'todo' | 'in_progress' | 'done'
 
-interface Sprint {
+type Sprint = {
   active: boolean
   startedAt: number | null
   endedAt: number | null
 }
 
-interface SiaProject {
+type SiaProject = {
   id: string
   name: string
   sprint: Sprint
 }
 
-interface SiaIssue {
+type SiaIssue = {
   id: string
   projectId: string
   title: string
@@ -55,9 +56,8 @@ function createId(prefix: string) {
 }
 
 export function SiaMode() {
-  const [state, setState] = useState<SiaState>(DEFAULT_STATE)
+  const [state, setState] = useMarkdownState(loadSiaState, saveSiaState, DEFAULT_STATE)
   const [draggingIssueId, setDraggingIssueId] = useState<string | null>(null)
-  const [hydrated, setHydrated] = useState(false)
   const [sidebarIssueTitle, setSidebarIssueTitle] = useState('')
   const [topbarIssueTitle, setTopbarIssueTitle] = useState('')
   const [columnDraft, setColumnDraft] = useState<Record<IssueStatus, string>>({
@@ -65,26 +65,6 @@ export function SiaMode() {
     in_progress: '',
     done: ''
   })
-
-  useEffect(() => {
-    let mounted = true
-    loadSiaState(DEFAULT_STATE)
-      .then((loaded) => {
-        if (!mounted) return
-        setState(loaded)
-      })
-      .finally(() => {
-        if (mounted) setHydrated(true)
-      })
-    return () => {
-      mounted = false
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!hydrated) return
-    saveSiaState(state).catch(console.error)
-  }, [state, hydrated])
 
   const selectedProject =
     state.projects.find((project) => project.id === state.selectedProjectId) ?? state.projects[0] ?? null

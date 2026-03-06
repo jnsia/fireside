@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AGENTS } from '../../agents'
-import { loadGroupChatState, saveGroupChatState } from '../../lib/firesideDataMd'
-import type { Message } from '../../types'
+import { AGENTS } from '@entities/agent/model'
+import { loadGroupChatState, saveGroupChatState } from '@shared/lib/firesideDataMd'
+import type { Message } from '@shared/types'
 import styles from './GroupChat.module.css'
 
 interface GroupChatProps {

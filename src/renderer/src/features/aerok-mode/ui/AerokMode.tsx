@@ -1,16 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
-import { loadAerokState, saveAerokState, type AerokState } from '../../lib/firesideDataMd'
+import { useMemo, useState } from 'react'
+import { loadAerokState, saveAerokState, type AerokState } from '@shared/lib/firesideDataMd'
+import { useMarkdownState } from '@shared/hooks/useMarkdownState'
 import styles from './AerokMode.module.css'
 
 type MaterialType = 'word' | 'sentence' | 'quote'
 
-interface MaterialItem {
+type MaterialItem = {
   id: string
   type: MaterialType
   text: string
 }
 
-interface WritingItem {
+type WritingItem = {
   id: string
   title: string
   content: string
@@ -57,33 +58,13 @@ function formatUpdatedAt(value: number) {
 }
 
 export function AerokMode() {
-  const [state, setState] = useState<AerokState>(DEFAULT_STATE)
-  const [hydrated, setHydrated] = useState(false)
+  const [state, setState] = useMarkdownState(loadAerokState, saveAerokState, DEFAULT_STATE)
   const [selectedWritingId, setSelectedWritingId] = useState<string | null>(null)
   const [drafts, setDrafts] = useState<Record<MaterialType, string>>({
     word: '',
     sentence: '',
     quote: ''
   })
-
-  useEffect(() => {
-    let mounted = true
-    loadAerokState(DEFAULT_STATE)
-      .then((loaded) => {
-        if (mounted) setState(loaded)
-      })
-      .finally(() => {
-        if (mounted) setHydrated(true)
-      })
-    return () => {
-      mounted = false
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!hydrated) return
-    saveAerokState(state).catch(console.error)
-  }, [state, hydrated])
 
   const grouped = useMemo(
     () => ({

@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import styles from "./MarkdownEditor.module.css";
 
-interface MarkdownEditorProps {
+type MarkdownEditorProps = Readonly<{
   note: NoteEntry | null;
-}
+}>
 
 export function MarkdownEditor({ note }: MarkdownEditorProps) {
   const [content, setContent] = useState("");

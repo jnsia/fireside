@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { loadAgentChatState, saveAgentChatState } from '../../lib/firesideDataMd'
-import type { Agent, Message } from '../../types'
+import { loadAgentChatState, saveAgentChatState } from '@shared/lib/firesideDataMd'
+import type { Agent, Message } from '@shared/types'
 import styles from './AgentChat.module.css'
 
 const TOOL_LABELS: Record<string, string> = {

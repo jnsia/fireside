@@ -9,7 +9,11 @@
     "skipLibCheck": true,
     "lib": ["ESNext", "DOM"],
     "paths": {
-      "@/*": ["./src/renderer/src/*"]
+      "@/*": ["./src/renderer/src/*"],
+      "@features/*": ["./src/renderer/src/features/*"],
+      "@widgets/*": ["./src/renderer/src/widgets/*"],
+      "@entities/*": ["./src/renderer/src/entities/*"],
+      "@shared/*": ["./src/renderer/src/shared/*"]
     }
   },
   "include": ["src/renderer/**/*"]

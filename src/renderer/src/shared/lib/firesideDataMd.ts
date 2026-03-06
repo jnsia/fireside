@@ -1,4 +1,4 @@
-import type { Message } from '../types'
+import type { Message } from '@shared/types'
 
 const ROOT_DIR = '99_Fireside'
 

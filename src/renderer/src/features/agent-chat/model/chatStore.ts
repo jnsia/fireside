@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import type { Message, ChatSession } from '../types'
+import type { Message, ChatSession } from '@shared/types'
 
 const sessions: Record<string, ChatSession> = {}
 

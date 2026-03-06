@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import type { Agent } from '../../types'
-import { useChatStore } from '../../store/chatStore'
+import type { Agent } from '@shared/types'
+import { useChatStore } from '@features/agent-chat/model/chatStore'
 import styles from './ChatPanel.module.css'
 
 interface ChatPanelProps {

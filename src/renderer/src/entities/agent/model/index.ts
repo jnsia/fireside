@@ -1,4 +1,4 @@
-import type { Agent } from '../types'
+import type { Agent } from '@shared/types'
 
 const DICEBEAR = 'https://api.dicebear.com/9.x/notionists/svg'
 
