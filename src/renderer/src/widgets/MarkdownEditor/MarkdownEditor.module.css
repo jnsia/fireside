@@ -22,7 +22,10 @@
   gap: 10px;
 }
 
-.fileIcon { font-size: 13px; opacity: 0.6; }
+.fileIcon {
+  font-size: 13px;
+  opacity: 0.6;
+}
 
 .noteName {
   font-size: 13px;
@@ -37,8 +40,16 @@
   border-radius: 50%;
   transition: background 0.3s, box-shadow 0.3s;
 }
-.saveDotSaved { background: #4ade80; box-shadow: 0 0 8px rgba(74, 222, 128, 0.4); }
-.saveDotPending { background: #facc15; box-shadow: 0 0 8px rgba(250, 204, 21, 0.4); }
+
+.saveDotSaved {
+  background: #4ade80;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+}
+
+.saveDotPending {
+  background: #facc15;
+  box-shadow: 0 0 8px rgba(250, 204, 21, 0.4);
+}
 
 .toolbarRight {
   display: flex;
@@ -52,144 +63,257 @@
   letter-spacing: 0.04em;
 }
 
-/* Live Editor Area */
 .editorWrapper {
   flex: 1;
+  min-height: 0;
   overflow: hidden;
-  position: relative;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 140, 40, 0.15) transparent;
-}
-.editorWrapper::-webkit-scrollbar { width: 4px; }
-.editorWrapper::-webkit-scrollbar-thumb { background: rgba(255,140,40,0.15); border-radius: 2px; }
-
-.previewLayer {
-  position: absolute;
-  inset: 0;
-  padding: 40px 60px;
-  box-sizing: border-box;
-  overflow: auto;
-  pointer-events: none;
-  color: rgba(240, 230, 210, 0.94);
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  font-size: 16px;
-  line-height: 1.8;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  tab-size: 2;
+  background:
+    radial-gradient(circle at top, rgba(255, 185, 110, 0.06), transparent 24%),
+    linear-gradient(180deg, rgba(255, 176, 84, 0.04), transparent 18%),
+    linear-gradient(180deg, rgba(11, 8, 6, 0.2), rgba(11, 8, 6, 0.03));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
-.liveEditor {
-  position: absolute;
-  inset: 0;
-  padding: 40px 60px;
-  box-sizing: border-box;
-  border: none;
-  background: transparent;
-  z-index: 1;
+.editorRoot {
+  width: 100%;
+  height: 100%;
+}
+
+.editorRoot :global(.cm-editor) {
+  height: 100%;
+}
+
+.editorRoot :global(.cm-focused) {
   outline: none;
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  font-size: 16px;
-  line-height: 1.8;
-  color: transparent;
-  caret-color: rgba(255, 226, 176, 0.96);
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  overflow-x: auto;
-  overflow-y: auto;
-  resize: none;
-  tab-size: 2;
 }
 
-.liveEditor::selection {
-  background: rgba(255, 156, 63, 0.22);
-  color: transparent;
+.editorRoot :global(.cm-scroller) {
+  scrollbar-width: thin;
 }
 
-.previewLine {
-  min-height: 1.8em;
-  display: block;
+.editorRoot :global(.cm-content) {
+  max-width: 860px;
+  margin: 0 auto;
 }
 
-.previewText {
-  display: block;
+.editorRoot :global(.cm-line) {
+  padding: 0 12px;
+  border-radius: 8px;
 }
 
-.indentToken {
-  white-space: pre;
+.editorRoot :global(.cm-line.md-heading) {
+  letter-spacing: -0.015em;
 }
 
-.syntaxToken {
-  color: rgba(224, 190, 139, 0.55);
+.editorRoot :global(.cm-line.md-heading .md-heading-syntax-active) {
+  display: inline;
+  color: rgba(255, 196, 124, 0.72);
 }
 
-.listToken {
-  color: rgba(255, 187, 107, 0.72);
+.editorRoot :global(.cm-line.md-heading-1) {
+  font-size: 2em;
+  line-height: 1.35;
+  font-weight: 800;
+  color: rgba(255, 236, 205, 0.99);
 }
 
-.heading1,
-.heading2,
-.heading3,
-.heading4,
-.heading5,
-.heading6 {
+.editorRoot :global(.cm-line.md-heading-2) {
+  font-size: 1.6em;
+  line-height: 1.42;
+  font-weight: 760;
+  color: rgba(255, 229, 194, 0.97);
+}
+
+.editorRoot :global(.cm-line.md-heading-3) {
+  font-size: 1.3em;
+  line-height: 1.5;
+  font-weight: 720;
+  color: rgba(255, 221, 179, 0.95);
+}
+
+.editorRoot :global(.cm-line.md-heading-4) {
+  font-size: 1.12em;
   font-weight: 700;
-  letter-spacing: 0.01em;
+  color: rgba(250, 211, 164, 0.93);
 }
 
-.heading1 { color: rgba(255, 225, 176, 0.98); }
-.heading2 { color: rgba(255, 218, 168, 0.97); }
-.heading3 { color: rgba(255, 212, 160, 0.95); }
-.heading4 { color: rgba(255, 206, 151, 0.94); }
-.heading5 { color: rgba(252, 202, 149, 0.92); }
-.heading6 { color: rgba(242, 196, 146, 0.88); }
-
-.bulletLine {
-  color: rgba(246, 218, 173, 0.96);
+.editorRoot :global(.cm-line.md-heading-5) {
+  font-size: 1.04em;
+  font-weight: 680;
+  color: rgba(243, 203, 156, 0.9);
 }
 
-.checkboxLine {
-  color: rgba(241, 214, 168, 0.95);
+.editorRoot :global(.cm-line.md-heading-6) {
+  font-size: 1em;
+  font-weight: 660;
+  color: rgba(231, 191, 146, 0.84);
 }
 
-.checkboxLineChecked {
-  color: rgba(188, 214, 178, 0.95);
+.editorRoot :global(.cm-line.checklist-line) {
+  position: relative;
+  padding-left: 18px;
 }
 
-.quoteLine {
-  color: rgba(205, 225, 255, 0.9);
+.editorRoot :global(.cm-line.checklist-line.checklist-line-done) {
+  color: rgba(187, 210, 186, 0.82);
+  background: linear-gradient(90deg, rgba(102, 153, 108, 0.08), transparent 28%);
 }
 
-.codeFenceLine {
-  color: rgba(167, 197, 227, 0.86);
-  background: rgba(16, 24, 36, 0.54);
-  border-radius: 6px;
+.editorRoot :global(.cm-activeLine) {
+  box-shadow: inset 2px 0 0 rgba(255, 196, 124, 0.34);
 }
 
-.codeBlockLine {
-  color: rgba(211, 230, 246, 0.93);
-  background: rgba(16, 24, 36, 0.38);
+.editorRoot :global(.tok-heading) {
+  color: rgba(255, 227, 186, 0.98);
+  font-weight: 700;
 }
 
-.hrLine {
-  color: rgba(208, 176, 132, 0.56);
+.editorRoot :global(.tok-processingInstruction) {
+  color: rgba(255, 186, 117, 0.62);
 }
 
-.inlineCode {
-  color: rgba(198, 230, 255, 0.95);
-  background: rgba(49, 72, 96, 0.45);
-  border-radius: 4px;
-  padding: 0 2px;
-}
-
-.inlineLink {
+.editorRoot :global(.tok-link) {
   color: rgba(138, 201, 255, 0.96);
   text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
 }
 
-/* Placeholder */
+.editorRoot :global(.tok-url) {
+  color: rgba(123, 196, 255, 0.9);
+}
+
+.editorRoot :global(.tok-emphasis) {
+  color: rgba(245, 220, 185, 0.92);
+  font-style: italic;
+}
+
+.editorRoot :global(.tok-strong) {
+  color: rgba(255, 236, 198, 0.98);
+  font-weight: 700;
+}
+
+.editorRoot :global(.tok-monospace) {
+  color: rgba(198, 230, 255, 0.95);
+  background: rgba(49, 72, 96, 0.45);
+  border: 1px solid rgba(126, 166, 204, 0.16);
+  border-radius: 6px;
+  padding: 1px 5px;
+}
+
+.editorRoot :global(.tok-quote) {
+  color: rgba(182, 210, 238, 0.92);
+}
+
+.editorRoot :global(.tok-list) {
+  color: rgba(255, 196, 124, 0.84);
+}
+
+.editorRoot :global(.tok-contentSeparator) {
+  color: rgba(224, 189, 137, 0.52);
+}
+
+.editorRoot :global(.tok-comment) {
+  color: rgba(176, 158, 128, 0.54);
+}
+
+.editorRoot :global(.checklist-marker) {
+  color: rgba(255, 214, 159, 0.72);
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 202, 139, 0.18);
+  border-radius: 6px;
+  padding: 1px 6px;
+  margin-right: 8px;
+}
+
+.editorRoot :global(.checklist-marker-done) {
+  color: rgba(183, 226, 185, 0.96);
+  background: rgba(123, 192, 129, 0.18);
+  border-color: rgba(137, 210, 144, 0.38);
+  box-shadow: 0 0 0 1px rgba(137, 210, 144, 0.08);
+}
+
+.editorRoot :global(.checklist-content-done) {
+  color: rgba(170, 190, 168, 0.72);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: rgba(143, 176, 141, 0.6);
+}
+
+.editorRoot :global(.md-bullet-widget) {
+  display: inline-flex;
+  width: 18px;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  color: rgba(255, 197, 124, 0.9);
+  font-size: 17px;
+  font-weight: 800;
+  transform: translateY(-1px);
+}
+
+.editorRoot :global(.md-checkbox-widget) {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  border: 1px solid rgba(255, 206, 144, 0.42);
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  color: transparent;
+  cursor: pointer;
+  vertical-align: text-bottom;
+  transform: translateY(-1px);
+}
+
+.editorRoot :global(.md-checkbox-widget:hover) {
+  border-color: rgba(255, 220, 171, 0.62);
+  background: linear-gradient(180deg, rgba(255, 205, 143, 0.14), rgba(255, 255, 255, 0.04));
+}
+
+.editorRoot :global(.md-checkbox-widget-done) {
+  color: rgba(232, 255, 234, 0.98);
+  border-color: rgba(140, 209, 147, 0.52);
+  background: linear-gradient(180deg, rgba(120, 188, 127, 0.26), rgba(86, 146, 92, 0.18));
+  box-shadow:
+    inset 0 1px 0 rgba(223, 255, 226, 0.08),
+    0 0 0 1px rgba(114, 170, 119, 0.08);
+}
+
+.editorRoot :global(.cm-tooltip-autocomplete) {
+  max-width: 320px;
+}
+
+.editorRoot :global(.cm-tooltip-autocomplete ul) {
+  padding: 0;
+}
+
+.editorRoot :global(.cm-tooltip-autocomplete ul li) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.editorRoot :global(.cm-tooltip-autocomplete ul li[aria-selected]) {
+  box-shadow: inset 0 0 0 1px rgba(255, 195, 122, 0.14);
+}
+
+.editorRoot :global(.cm-completionMatchedText) {
+  color: rgba(255, 237, 200, 0.98);
+  text-decoration: none;
+}
+
+.editorRoot :global(.cm-tooltip-autocomplete ul li .cm-completionDetail) {
+  justify-self: end;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .placeholder {
   flex: 1;
   display: flex;
@@ -199,6 +323,19 @@
   color: rgba(245, 215, 160, 0.15);
 }
 
-.placeholderIcon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
-.placeholderText { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
-.placeholderSub { font-size: 13px; opacity: 0.7; }
+.placeholderIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.placeholderText {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.placeholderSub {
+  font-size: 13px;
+  opacity: 0.7;
+}
