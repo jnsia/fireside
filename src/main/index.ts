@@ -30,6 +30,36 @@ function walk(dir: string): { name: string; filePath: string; rel: string }[] {
   })
 }
 
+function resolveVaultPath(relPath = '') {
+  const normalized = path.normalize(relPath).replace(/^(\.\.(\/|\\|$))+/, '')
+  const full = path.resolve(NEUROSTARS_PATH, normalized)
+  if (!full.startsWith(path.resolve(NEUROSTARS_PATH))) {
+    throw new Error('접근 거부')
+  }
+  return full
+}
+
+function noteEntryFromPath(filePath: string) {
+  const rel = path.relative(NEUROSTARS_PATH, filePath)
+  return {
+    name: path.basename(filePath, '.md'),
+    filePath,
+    rel
+  }
+}
+
+function duplicateNotePath(filePath: string) {
+  const dir = path.dirname(filePath)
+  const base = path.basename(filePath, '.md')
+  let candidate = path.join(dir, `${base} 사본.md`)
+  let count = 2
+  while (fs.existsSync(candidate)) {
+    candidate = path.join(dir, `${base} 사본 ${count}.md`)
+    count += 1
+  }
+  return candidate
+}
+
 // ── OpenRouter 클라이언트 ─────────────────────────────────────────
 async function getClient() {
   const OpenAI = (await import('openai')).default
@@ -324,11 +354,32 @@ ipcMain.handle('fs:write-note',  async (_event, filePath: string, content: strin
   fs.writeFileSync(filePath, content, 'utf-8')
 })
 
-ipcMain.handle('fs:new-note',    async (_event, name: string) => {
-  fs.mkdirSync(NEUROSTARS_PATH, { recursive: true })
-  const filePath = path.join(NEUROSTARS_PATH, `${name}.md`)
-  if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, `# ${name}\n\n`, 'utf-8')
-  return filePath
+ipcMain.handle('fs:new-note',    async (_event, name: string, parentRel = '') => {
+  const trimmed = name.trim()
+  if (!trimmed) throw new Error('이름이 필요합니다')
+  const dirPath = resolveVaultPath(parentRel)
+  fs.mkdirSync(dirPath, { recursive: true })
+  const filePath = path.join(dirPath, `${trimmed}.md`)
+  if (!filePath.startsWith(path.resolve(NEUROSTARS_PATH))) throw new Error('접근 거부')
+  if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, `# ${trimmed}\n\n`, 'utf-8')
+  return noteEntryFromPath(filePath)
+})
+
+ipcMain.handle('fs:new-folder', async (_event, name: string, parentRel = '') => {
+  const trimmed = name.trim()
+  if (!trimmed) throw new Error('이름이 필요합니다')
+  const parentPath = resolveVaultPath(parentRel)
+  const folderPath = path.join(parentPath, trimmed)
+  if (!folderPath.startsWith(path.resolve(NEUROSTARS_PATH))) throw new Error('접근 거부')
+  fs.mkdirSync(folderPath, { recursive: true })
+  return path.relative(NEUROSTARS_PATH, folderPath)
+})
+
+ipcMain.handle('fs:duplicate-note', async (_event, filePath: string) => {
+  if (!filePath.startsWith(path.resolve(NEUROSTARS_PATH))) throw new Error('접근 거부')
+  const nextPath = duplicateNotePath(filePath)
+  fs.copyFileSync(filePath, nextPath)
+  return noteEntryFromPath(nextPath)
 })
 
 ipcMain.handle('fs:delete-note', async (_event, filePath: string) => {

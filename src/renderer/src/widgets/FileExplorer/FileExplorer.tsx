@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import styles from './FileExplorer.module.css'
 
 type TreeItem =
@@ -37,9 +37,10 @@ interface NodeProps {
   depth: number
   selected: NoteEntry | null
   onSelect: (note: NoteEntry) => void
+  onContextMenu: (event: React.MouseEvent, item: TreeItem) => void
 }
 
-function Node({ item, depth, selected, onSelect }: NodeProps) {
+function Node({ item, depth, selected, onSelect, onContextMenu }: NodeProps) {
   const [open, setOpen] = useState(() => {
     if (item.type !== 'dir') return false
     return localStorage.getItem(`fireside-dir:${item.path}`) === 'true'
@@ -61,12 +62,20 @@ function Node({ item, depth, selected, onSelect }: NodeProps) {
           className={styles.dirItem}
           style={{ paddingLeft: 10 + indent }}
           onClick={handleToggle}
+          onContextMenu={(event) => onContextMenu(event, item)}
         >
           <span className={styles.arrow}>{open ? '▾' : '▸'}</span>
           <span className={styles.dirName}>{item.name}</span>
         </button>
         {open && item.children.map((child, i) => (
-          <Node key={i} item={child} depth={depth + 1} selected={selected} onSelect={onSelect} />
+          <Node
+            key={i}
+            item={child}
+            depth={depth + 1}
+            selected={selected}
+            onSelect={onSelect}
+            onContextMenu={onContextMenu}
+          />
         ))}
       </>
     )
@@ -78,6 +87,7 @@ function Node({ item, depth, selected, onSelect }: NodeProps) {
       className={`${styles.fileItem} ${isActive ? styles.active : ''}`}
       style={{ paddingLeft: 10 + indent + 14 }}
       onClick={() => onSelect(item.note)}
+      onContextMenu={(event) => onContextMenu(event, item)}
       title={item.note.rel}
     >
       {item.name}
@@ -93,52 +103,174 @@ interface FileExplorerProps {
 
 export function FileExplorer({ selected, onSelect, refreshKey = 0 }: FileExplorerProps) {
   const [notes, setNotes] = useState<NoteEntry[]>([])
-  const [newName, setNewName] = useState('')
-  const [showNew, setShowNew] = useState(false)
+  const [draftName, setDraftName] = useState('')
+  const [draftMode, setDraftMode] = useState<'note' | 'folder'>('note')
+  const [draftParentRel, setDraftParentRel] = useState('')
+  const [showDraft, setShowDraft] = useState(false)
+  const [query, setQuery] = useState('')
+  const [menu, setMenu] = useState<{ x: number; y: number; target: TreeItem | null } | null>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
 
   const reload = () => window.api.listNotes().then(setNotes)
   useEffect(() => { reload() }, [refreshKey])
 
-  const handleCreate = async () => {
-    const name = newName.trim()
-    if (!name) return
-    const filePath = await window.api.newNote(name)
-    await reload()
-    onSelect({ name, filePath, rel: `${name}.md` })
-    setNewName('')
-    setShowNew(false)
+  useEffect(() => {
+    if (!menu) return
+    const handleClose = () => setMenu(null)
+    window.addEventListener('click', handleClose)
+    return () => window.removeEventListener('click', handleClose)
+  }, [menu])
+
+  const openDraft = (mode: 'note' | 'folder', parentRel = '') => {
+    if (parentRel) localStorage.setItem(`fireside-dir:${parentRel}`, 'true')
+    setDraftMode(mode)
+    setDraftParentRel(parentRel)
+    setDraftName('')
+    setShowDraft(true)
+    setMenu(null)
   }
 
-  const tree = buildTree(notes)
+  const handleCreate = async () => {
+    const name = draftName.trim()
+    if (!name) return
+    if (draftMode === 'folder') {
+      await window.api.newFolder(name, draftParentRel)
+      await reload()
+      setDraftName('')
+      setShowDraft(false)
+      return
+    }
+
+    const note = await window.api.newNote(name, draftParentRel)
+    await reload()
+    onSelect(note)
+    setDraftName('')
+    setShowDraft(false)
+  }
+
+  const normalizedQuery = query.trim().toLowerCase()
+  const filteredNotes = normalizedQuery
+    ? notes.filter((note) => {
+        const haystack = `${note.name} ${note.rel}`.toLowerCase()
+        return haystack.includes(normalizedQuery)
+      })
+    : notes
+  const tree = buildTree(filteredNotes)
+  const draftParentLabel = useMemo(() => draftParentRel || 'Vault root', [draftParentRel])
+
+  const handleContextMenu = (event: React.MouseEvent, item: TreeItem | null) => {
+    event.preventDefault()
+    event.stopPropagation()
+    const rect = panelRef.current?.getBoundingClientRect()
+    setMenu({
+      x: (event.clientX - (rect?.left ?? 0)),
+      y: (event.clientY - (rect?.top ?? 0)),
+      target: item
+    })
+  }
+
+  const menuParentRel = menu?.target?.type === 'dir' ? menu.target.path : ''
 
   return (
-    <div className={styles.panel}>
+    <div ref={panelRef} className={styles.panel}>
       <div className={styles.header}>
-        <span className={styles.title}>Neurostars</span>
-        <button className={styles.addBtn} onClick={() => setShowNew(v => !v)} title="새 노트">+</button>
+        <div>
+          <div className={styles.eyebrow}>Vault</div>
+          <span className={styles.title}>Neurostars</span>
+        </div>
+        <button className={styles.addBtn} onClick={() => openDraft('note', '')} title="새 노트">
+          New
+        </button>
       </div>
 
-      {showNew && (
+      <div className={styles.searchSection}>
+        <label className={styles.searchLabel}>
+          <span className={styles.searchIcon}>⌕</span>
+          <input
+            className={styles.searchInput}
+            placeholder="파일 또는 경로 검색"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </label>
+        <div className={styles.metaRow}>
+          <span className={styles.metaBadge}>{notes.length} notes</span>
+          {normalizedQuery && <span className={styles.metaHint}>{filteredNotes.length} matches</span>}
+        </div>
+      </div>
+
+      {showDraft && (
         <div className={styles.newRow}>
+          <div className={styles.newMeta}>
+            <span className={styles.newMode}>{draftMode === 'note' ? 'New note' : 'New folder'}</span>
+            <span className={styles.newPath}>{draftParentLabel}</span>
+          </div>
           <input
             className={styles.newInput}
-            placeholder="노트 이름"
-            value={newName}
+            placeholder={draftMode === 'note' ? '노트 이름' : '폴더 이름'}
+            value={draftName}
             autoFocus
-            onChange={e => setNewName(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') handleCreate(); if (e.key === 'Escape') setShowNew(false) }}
+            onChange={e => setDraftName(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') handleCreate(); if (e.key === 'Escape') setShowDraft(false) }}
           />
         </div>
       )}
 
-      <div className={styles.tree}>
+      <div className={styles.tree} onContextMenu={(event) => handleContextMenu(event, null)}>
         {tree.length === 0
-          ? <div className={styles.empty}>노트 없음</div>
+          ? <div className={styles.empty}>{normalizedQuery ? '검색 결과가 없습니다' : '노트가 없습니다'}</div>
           : tree.map((item, i) => (
-              <Node key={i} item={item} depth={0} selected={selected} onSelect={onSelect} />
+              <Node
+                key={i}
+                item={item}
+                depth={0}
+                selected={selected}
+                onSelect={onSelect}
+                onContextMenu={handleContextMenu}
+              />
             ))
         }
       </div>
+
+      {menu && (
+        <div className={styles.contextMenu} style={{ left: menu.x, top: menu.y }}>
+          {(menu.target?.type === 'dir' || menu.target === null) && (
+            <>
+              <button className={styles.contextItem} onClick={() => openDraft('note', menuParentRel)}>
+                새 노트
+              </button>
+              <button className={styles.contextItem} onClick={() => openDraft('folder', menuParentRel)}>
+                새 폴더
+              </button>
+            </>
+          )}
+          {menu.target?.type === 'file' && (
+            <>
+              <button
+                className={styles.contextItem}
+                onClick={async () => {
+                  const duplicated = await window.api.duplicateNote(menu.target.note.filePath)
+                  await reload()
+                  onSelect(duplicated)
+                  setMenu(null)
+                }}
+              >
+                노트 복제
+              </button>
+              <button
+                className={`${styles.contextItem} ${styles.contextDanger}`}
+                onClick={async () => {
+                  await window.api.deleteNote(menu.target.note.filePath)
+                  await reload()
+                  setMenu(null)
+                }}
+              >
+                노트 삭제
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }

@@ -8,6 +8,7 @@
   --scroll-track:  rgba(0, 0, 0, 0.18);
   --scroll-thumb:  rgba(255, 140, 40, 0.36);
   --scroll-thumb-hover: rgba(255, 166, 88, 0.52);
+  color-scheme: dark;
 }
 
 * {
@@ -28,8 +29,9 @@ html, body {
   height: 100%;
   overflow: visible;
   background: transparent;
-  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 * {

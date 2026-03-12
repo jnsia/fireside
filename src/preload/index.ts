@@ -30,6 +30,8 @@ contextBridge.exposeInMainWorld('api', {
   listNotes: () => ipcRenderer.invoke('fs:list-notes'),
   readNote: (filePath: string) => ipcRenderer.invoke('fs:read-note', filePath),
   writeNote: (filePath: string, content: string) => ipcRenderer.invoke('fs:write-note', filePath, content),
-  newNote: (name: string) => ipcRenderer.invoke('fs:new-note', name),
+  newNote: (name: string, parentRel?: string) => ipcRenderer.invoke('fs:new-note', name, parentRel),
+  newFolder: (name: string, parentRel?: string) => ipcRenderer.invoke('fs:new-folder', name, parentRel),
+  duplicateNote: (filePath: string) => ipcRenderer.invoke('fs:duplicate-note', filePath),
   deleteNote: (filePath: string) => ipcRenderer.invoke('fs:delete-note', filePath),
 })

@@ -159,7 +159,9 @@ export default function App() {
                 key={tab.filePath}
                 className={`${styles.tab} ${activeTabPath === tab.filePath ? styles.tabActive : ''}`}
                 onClick={() => handleTabClick(tab)}
+                title={tab.rel}
               >
+                <span className={styles.tabDot} />
                 <span className={styles.tabName}>{tab.name}</span>
                 <span className={styles.tabClose} onClick={(event) => handleCloseTab(tab.filePath, event)}>
                   ×

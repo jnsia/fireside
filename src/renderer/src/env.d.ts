@@ -17,7 +17,9 @@ interface Window {
     listNotes:  () => Promise<NoteEntry[]>
     readNote:   (filePath: string) => Promise<string>
     writeNote:  (filePath: string, content: string) => Promise<void>
-    newNote:    (name: string) => Promise<string>
+    newNote:    (name: string, parentRel?: string) => Promise<NoteEntry>
+    newFolder:  (name: string, parentRel?: string) => Promise<string>
+    duplicateNote: (filePath: string) => Promise<NoteEntry>
     deleteNote: (filePath: string) => Promise<void>
   }
 }
