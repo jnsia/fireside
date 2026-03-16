@@ -158,11 +158,6 @@
   color: rgba(216, 189, 140, 0.7);
 }
 
-.topbarActions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
 
 .board {
   flex: 1;

@@ -1,4 +1,13 @@
 :root {
+  /* Night sky */
+  --night-base:    #070a14;
+  --night-surface: #0c0f1e;
+  --night-mid:     #111428;
+  /* Moon */
+  --moon-silver:   rgba(190, 215, 255, 0.72);
+  --moon-glow:     rgba(160, 200, 255, 0.07);
+  --moon-border:   rgba(180, 210, 255, 0.09);
+  /* Fire */
   --fire-amber:    #F4A35A;
   --fire-orange:   #E8622A;
   --fire-core:     #FFE08A;

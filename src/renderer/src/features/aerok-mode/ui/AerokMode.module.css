@@ -74,10 +74,10 @@
 
 .inlineInput {
   width: 100%;
-  border: 1px solid rgba(236, 72, 153, 0.35);
+  border: 1px solid rgba(236, 72, 153, 0.3);
   border-radius: 7px;
-  background: rgba(80, 7, 36, 0.22);
-  color: rgba(253, 242, 248, 0.95);
+  background: rgba(0, 0, 0, 0.28);
+  color: rgba(253, 242, 248, 0.92);
   padding: 6px 8px;
   font-size: 12px;
   outline: none;
@@ -184,10 +184,10 @@
 .editor {
   flex: 1;
   min-height: 0;
-  border: 1px solid rgba(236, 72, 153, 0.26);
+  border: 1px solid rgba(236, 72, 153, 0.2);
   border-radius: 12px;
-  background: rgba(0, 0, 0, 0.22);
-  color: rgba(253, 242, 248, 0.92);
+  background: rgba(5, 3, 8, 0.5);
+  color: rgba(248, 230, 240, 0.9);
   font-size: 15px;
   line-height: 1.8;
   padding: 18px;

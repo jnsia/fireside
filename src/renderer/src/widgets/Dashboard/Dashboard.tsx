@@ -15,20 +15,29 @@ interface TodoItem {
 
 interface DashboardProps {
   refreshKey?: number;
+  onSelectNote: (note: NoteEntry) => void;
 }
 
-export function Dashboard({ refreshKey }: DashboardProps) {
+export function Dashboard({ refreshKey, onSelectNote }: DashboardProps) {
   const [now, setNow] = useState(new Date());
   const [timeline, setTimeline] = useState<TimelineItem[]>([]);
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dailyNoteFolder, setDailyNoteFolder] = useState('02_Areas/Life/Daily Log');
+  const [workLogFolder, setWorkLogFolder] = useState('02_Areas/Work');
 
-  // 1. 날짜 관련 계산
+  useEffect(() => {
+    window.api.getConfig().then((config) => {
+      setDailyNoteFolder(config.dailyNoteFolder);
+      setWorkLogFolder(config.workLogFolder);
+    });
+  }, []);
+
+  // 날짜 관련 계산
   const year = now.getFullYear();
   const month = now.getMonth();
   const date = now.getDate();
 
-  // YYMMDD 형식 생성
   const getYYMMDD = (d: Date) => {
     const yy = String(d.getFullYear()).slice(2);
     const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -37,14 +46,13 @@ export function Dashboard({ refreshKey }: DashboardProps) {
   };
   const todayKey = getYYMMDD(now);
 
-  // 2. 타임라인 데이터 로드
+  // 타임라인 데이터 로드
   const fetchTimeline = useCallback(async () => {
     setLoading(true);
     try {
       const filename = `${getYYMMDD(now)}.md`;
-      const path = `02_Areas/Life/Daily Log/${filename}`;
+      const path = `${dailyNoteFolder}/${filename}`;
 
-      // 전체 목록에서 경로 찾기
       const allNotes = await window.api.listNotes();
       const dailyNote = allNotes.find((n: any) => n.rel === path);
 
@@ -76,7 +84,6 @@ export function Dashboard({ refreshKey }: DashboardProps) {
           }
 
           if (inSchedule && trimmed.startsWith("- [")) {
-            // 형식: - [x] 07:50 - 08:20 기상 / 준비
             const match = line.match(/- \[(x| )\] ([\d: \-]+) (.*)/);
             if (match) {
               timelineItems.push({
@@ -110,7 +117,7 @@ export function Dashboard({ refreshKey }: DashboardProps) {
     } finally {
       setLoading(false);
     }
-  }, [now]);
+  }, [now, dailyNoteFolder]);
 
   useEffect(() => {
     fetchTimeline();
@@ -118,23 +125,69 @@ export function Dashboard({ refreshKey }: DashboardProps) {
     return () => clearInterval(timer);
   }, [fetchTimeline, refreshKey]);
 
-  // 3. 달력 렌더링 도우미
+  // 오늘 노트 열기 (업무 일지 → 데일리 순서로 열어 데일리가 포커스됨)
+  const handleOpenToday = useCallback(async () => {
+    const key = getYYMMDD(now);
+    const filename = `${key}.md`;
+    const allNotes = await window.api.listNotes();
+
+    const workNote = allNotes.find((n) => n.rel === `${workLogFolder}/${filename}`);
+    if (workNote) {
+      onSelectNote(workNote);
+    } else {
+      try {
+        const created = await window.api.newNote(key, workLogFolder);
+        onSelectNote(created);
+      } catch {}
+    }
+
+    const dailyNote = allNotes.find((n) => n.rel === `${dailyNoteFolder}/${filename}`);
+    if (dailyNote) {
+      onSelectNote(dailyNote);
+    } else {
+      try {
+        const created = await window.api.newNote(key, dailyNoteFolder);
+        onSelectNote(created);
+      } catch {}
+    }
+  }, [now, dailyNoteFolder, workLogFolder, onSelectNote]);
+
+  // 달력 날짜 클릭 → 해당 일자 데일리 노트 열기
+  const handleDateClick = useCallback(async (dayNum: number) => {
+    const d = new Date(year, month, dayNum);
+    const key = getYYMMDD(d);
+    const allNotes = await window.api.listNotes();
+    const note = allNotes.find((n) => n.rel === `${dailyNoteFolder}/${key}.md`);
+    if (note) {
+      onSelectNote(note);
+    } else {
+      try {
+        const created = await window.api.newNote(key, dailyNoteFolder);
+        onSelectNote(created);
+      } catch {}
+    }
+  }, [year, month, dailyNoteFolder, onSelectNote]);
+
+  // 달력 렌더링
   const renderCalendar = () => {
     const startDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
     const days = [];
 
-    // 빈 칸
     for (let i = 0; i < startDay; i++)
       days.push(<div key={`empty-${i}`} className={styles.dayEmpty} />);
-    // 날짜
+
     for (let i = 1; i <= lastDate; i++) {
       const isToday =
         i === date &&
         month === new Date().getMonth() &&
         year === new Date().getFullYear();
       days.push(
-        <div key={i} className={`${styles.day} ${isToday ? styles.today : ""}`}>
+        <div
+          key={i}
+          className={`${styles.day} ${isToday ? styles.today : ""}`}
+          onClick={() => handleDateClick(i)}
+        >
           {i}
         </div>,
       );
@@ -142,8 +195,8 @@ export function Dashboard({ refreshKey }: DashboardProps) {
 
     return (
       <div className={styles.calendarGrid}>
-        {["S", "M", "T", "W", "T", "F", "S"].map((d) => (
-          <div key={d} className={styles.dayHeader}>
+        {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+          <div key={i} className={styles.dayHeader}>
             {d}
           </div>
         ))}
@@ -154,14 +207,30 @@ export function Dashboard({ refreshKey }: DashboardProps) {
 
   return (
     <div className={styles.container}>
-      {/* 캘린더 섹션 */}
+      {/* 오늘 열기 버튼 */}
+      <button className={styles.todayBtn} onClick={handleOpenToday}>
+        <span className={styles.todayBtnDot} />
+        오늘 노트 열기
+        <span className={styles.todayBtnDate}>{todayKey}</span>
+      </button>
+
+      {/* 할일 섹션 */}
       <section className={styles.section}>
         <div className={styles.header}>
-          <span className={styles.title}>
-            {year}년 {month + 1}월
-          </span>
+          <span className={styles.title}>할 일 목록</span>
         </div>
-        {renderCalendar()}
+
+        <div className={styles.todoList}>
+          {todos.length === 0 && <div className={styles.empty}>마크다운 할 일이 없습니다.</div>}
+          {todos.map((todo) => (
+            <div key={todo.id} className={styles.todoItem}>
+              <label className={styles.todoLabel}>
+                <input type="checkbox" checked={todo.done} readOnly />
+                <span className={todo.done ? styles.todoDone : ""}>{todo.text}</span>
+              </label>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* 타임라인 섹션 */}
@@ -196,23 +265,14 @@ export function Dashboard({ refreshKey }: DashboardProps) {
         </div>
       </section>
 
+      {/* 캘린더 섹션 */}
       <section className={styles.section}>
         <div className={styles.header}>
-          <span className={styles.title}>할 일 목록</span>
-          <span className={styles.subtitle}>{todayKey}</span>
+          <span className={styles.title}>
+            {year}년 {month + 1}월
+          </span>
         </div>
-
-        <div className={styles.todoList}>
-          {todos.length === 0 && <div className={styles.empty}>마크다운 할 일이 없습니다.</div>}
-          {todos.map((todo) => (
-            <div key={todo.id} className={styles.todoItem}>
-              <label className={styles.todoLabel}>
-                <input type="checkbox" checked={todo.done} readOnly />
-                <span className={todo.done ? styles.todoDone : ""}>{todo.text}</span>
-              </label>
-            </div>
-          ))}
-        </div>
+        {renderCalendar()}
       </section>
     </div>
   );

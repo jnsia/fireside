@@ -2,33 +2,74 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 20px;
-  gap: 30px;
+  padding: 12px 14px;
+  gap: 14px;
   overflow-y: auto;
+}
+
+.todayBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 140, 40, 0.2);
+  background: linear-gradient(135deg, rgba(255, 140, 40, 0.1), rgba(255, 100, 20, 0.06));
+  color: rgba(255, 220, 168, 0.9);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Pretendard', sans-serif;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.todayBtn:hover {
+  background: linear-gradient(135deg, rgba(255, 140, 40, 0.18), rgba(255, 100, 20, 0.12));
+  border-color: rgba(255, 140, 40, 0.38);
+}
+
+.todayBtnDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(190, 215, 255, 0.85);
+  box-shadow: 0 0 6px rgba(160, 200, 255, 0.55);
+  flex-shrink: 0;
+}
+
+.todayBtnDate {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 180, 100, 0.55);
+  letter-spacing: 0.04em;
 }
 
 .section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 140, 40, 0.15);
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(180, 210, 255, 0.09);
 }
 
 .title {
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 700;
   color: rgba(245, 215, 160, 0.9);
 }
 
 .subtitle {
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(245, 215, 160, 0.4);
 }
 
@@ -36,15 +77,15 @@
 .calendarGrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 2px;
 }
 
 .dayHeader {
   text-align: center;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   color: rgba(255, 140, 40, 0.5);
-  padding-bottom: 8px;
+  padding-bottom: 4px;
 }
 
 .day {
@@ -52,35 +93,63 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(245, 215, 160, 0.6);
-  border-radius: 6px;
-  transition: background 0.2s;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.day:hover {
+  background: rgba(255, 140, 40, 0.1);
+  color: rgba(245, 215, 160, 0.95);
 }
 
 .dayEmpty { aspect-ratio: 1; }
 
 .today {
-  background: rgba(255, 140, 40, 0.2);
-  color: rgba(255, 140, 40, 1);
+  background: rgba(180, 210, 255, 0.14);
+  color: rgba(190, 220, 255, 1);
   font-weight: 800;
-  border: 1px solid rgba(255, 140, 40, 0.3);
+  border: 1px solid rgba(180, 210, 255, 0.28);
+}
+
+.today:hover {
+  background: rgba(180, 210, 255, 0.22);
 }
 
 /* Timeline */
 .timelineSection {
   flex: 1;
+  min-height: 0;
 }
 
 .timeline {
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  max-height: 220px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 140, 40, 0.18) transparent;
+}
+
+.timeline::-webkit-scrollbar {
+  width: 3px;
+}
+
+.timeline::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.timeline::-webkit-scrollbar-thumb {
+  background: rgba(255, 140, 40, 0.2);
+  border-radius: 2px;
 }
 
 .item {
   display: flex;
-  gap: 16px;
-  min-height: 50px;
+  gap: 12px;
+  min-height: 38px;
 }
 
 .timeLineCol {
@@ -109,7 +178,7 @@
 
 .itemContent {
   flex: 1;
-  padding-bottom: 16px;
+  padding-bottom: 10px;
 }
 
 .itemTime {
@@ -136,9 +205,9 @@
 
 .loading, .empty {
   text-align: center;
-  padding: 40px 0;
-  font-size: 12px;
-  color: rgba(245, 215, 160, 0.3);
+  padding: 14px 0;
+  font-size: 11px;
+  color: rgba(245, 215, 160, 0.28);
   font-style: italic;
 }
 
@@ -153,19 +222,20 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  border: 1px solid rgba(255, 140, 40, 0.12);
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.12);
-  padding: 8px 10px;
+  border: 1px solid rgba(255, 140, 40, 0.1);
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 6px 10px;
 }
 
 .todoLabel {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   min-width: 0;
-  font-size: 12px;
-  color: rgba(245, 215, 160, 0.88);
+  font-size: 11px;
+  color: rgba(245, 215, 160, 0.85);
+  cursor: default;
 }
 
 .todoLabel span {

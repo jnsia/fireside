@@ -59,7 +59,6 @@ export function SiaMode() {
   const [state, setState] = useMarkdownState(loadSiaState, saveSiaState, DEFAULT_STATE)
   const [draggingIssueId, setDraggingIssueId] = useState<string | null>(null)
   const [sidebarIssueTitle, setSidebarIssueTitle] = useState('')
-  const [topbarIssueTitle, setTopbarIssueTitle] = useState('')
   const [columnDraft, setColumnDraft] = useState<Record<IssueStatus, string>>({
     todo: '',
     in_progress: '',
@@ -231,34 +230,6 @@ export function SiaMode() {
                 ? ` · 마감: ${new Date(selectedProject.sprint.endedAt).toLocaleDateString()}`
                 : ''}
             </div>
-          </div>
-          <div className={styles.topbarActions}>
-            <button className={styles.actionBtn} onClick={handleStartSprint} disabled={selectedProject.sprint.active}>
-              스프린트 시작
-            </button>
-            <button className={styles.actionBtn} onClick={handleEndSprint} disabled={!selectedProject.sprint.active}>
-              스프린트 마감
-            </button>
-            <input
-              className={styles.inlineInput}
-              value={topbarIssueTitle}
-              onChange={(event) => setTopbarIssueTitle(event.target.value)}
-              placeholder="상단 이슈 입력"
-              onKeyDown={(event) => {
-                if (event.key !== 'Enter') return
-                addIssue('todo', topbarIssueTitle)
-                setTopbarIssueTitle('')
-              }}
-            />
-            <button
-              className={styles.actionBtn}
-              onClick={() => {
-                addIssue('todo', topbarIssueTitle)
-                setTopbarIssueTitle('')
-              }}
-            >
-              이슈 추가
-            </button>
           </div>
         </div>
 

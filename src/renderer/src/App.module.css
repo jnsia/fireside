@@ -35,15 +35,16 @@
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(circle at top, rgba(255, 170, 82, 0.1), transparent 28%),
-    linear-gradient(180deg, rgba(20, 14, 10, 0.98) 0%, rgba(10, 8, 7, 0.99) 100%);
+    radial-gradient(ellipse 70% 40% at 50% -5%, rgba(160, 200, 255, 0.09) 0%, transparent 100%),
+    radial-gradient(ellipse 80% 35% at 50% 105%, rgba(255, 140, 40, 0.13) 0%, transparent 100%),
+    linear-gradient(180deg, #0a0d1a 0%, #070a12 100%);
   border-radius: 24px;
-  border: 1px solid rgba(255, 188, 118, 0.12);
+  border: 1px solid rgba(180, 210, 255, 0.1);
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.5),
     0 16px 40px rgba(0, 0, 0, 0.5),
     0 40px 120px rgba(0, 0, 0, 0.38),
-    inset 0 1px 0 rgba(255, 214, 161, 0.05);
+    inset 0 1px 0 rgba(190, 220, 255, 0.04);
   pointer-events: auto;
   overflow: hidden;
   position: relative;
@@ -53,12 +54,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 16px;
-  height: 46px;
+  padding: 0 14px;
+  height: 42px;
   flex-shrink: 0;
   -webkit-app-region: drag;
-  border-bottom: 1px solid rgba(255, 190, 120, 0.08);
-  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(180, 210, 255, 0.07);
+  background: rgba(7, 10, 20, 0.6);
 }
 
 .titleIcon {
@@ -85,8 +86,36 @@
   background: rgba(255, 255, 255, 0.04);
   color: rgba(255, 227, 181, 0.88);
   font-size: 11px;
-  padding: 6px 10px;
+  padding: 5px 10px;
   cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.modeResetBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 190, 120, 0.32);
+  color: rgba(255, 240, 210, 1);
+}
+
+.iconBtn {
+  -webkit-app-region: no-drag;
+  border: none;
+  background: none;
+  color: rgba(255, 255, 255, 0.28);
+  font-size: 14px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.iconBtn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 220, 170, 0.85);
 }
 
 .titleClose {
@@ -124,7 +153,7 @@
 }
 
 .chatPane {
-  width: 360px;
+  width: 300px;
   flex-shrink: 0;
   border-left: 1px solid rgba(255, 190, 120, 0.08);
   background: rgba(7, 5, 4, 0.4);
@@ -132,7 +161,7 @@
 }
 
 .infoPane {
-  width: 360px;
+  width: 300px;
   flex-shrink: 0;
   border-left: 1px solid rgba(255, 190, 120, 0.08);
   background: rgba(7, 5, 4, 0.4);
@@ -141,6 +170,7 @@
 
 .defaultLayout {
   flex: 1;
+  min-width: 0;
   min-height: 0;
   display: flex;
 }
@@ -163,8 +193,9 @@
 .tabBar {
   display: flex;
   align-items: center;
-  height: 42px;
+  height: 38px;
   flex-shrink: 0;
+  min-width: 0;
   border-bottom: 1px solid rgba(255, 190, 120, 0.08);
   background:
     linear-gradient(180deg, rgba(19, 15, 12, 0.9), rgba(14, 11, 9, 0.96));
@@ -172,7 +203,7 @@
   overflow-y: hidden;
   scrollbar-width: none;
   padding: 0 10px;
-  gap: 8px;
+  gap: 6px;
 }
 
 .tabBar::-webkit-scrollbar {
@@ -182,14 +213,14 @@
 .tab {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-  height: 30px;
+  gap: 6px;
+  padding: 0 10px;
+  height: 26px;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.02);
   color: rgba(199, 177, 139, 0.54);
-  font-size: 12px;
+  font-size: 11px;
   font-family: 'Pretendard', sans-serif;
   cursor: pointer;
   white-space: nowrap;
@@ -265,7 +296,8 @@
   position: relative;
   border-top: 1px solid rgba(255, 190, 120, 0.07);
   background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.16));
+    radial-gradient(ellipse 60% 80% at 50% 100%, rgba(255, 120, 30, 0.1) 0%, transparent 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(4, 6, 14, 0.2));
 }
 
 .campfireBottom {
