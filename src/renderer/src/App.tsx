@@ -10,6 +10,7 @@ import { AgentChat } from '@features/agent-chat/ui/AgentChat'
 import { SiaMode } from '@features/sia-mode/ui/SiaMode'
 import { JunjaMode } from '@features/junja-mode/ui/JunjaMode'
 import { AerokMode } from '@features/aerok-mode/ui/AerokMode'
+import { Settings } from '@widgets/Settings/Settings'
 import { ensureFiresideScaffold } from '@shared/lib/firesideDataMd'
 import styles from './App.module.css'
 
@@ -26,6 +27,7 @@ const MODE_LABELS: Record<ModeId, string> = {
   junja: '준자',
   aerok: '애록'
 }
+
 
 const AGENT_RADIUS = 85
 const FIRE_LOCAL = { x: 1300 / 2, y: 130 }
@@ -47,6 +49,7 @@ export default function App() {
   const [mode, setMode] = useState<ModeId>('default')
   const [agentChatId, setAgentChatId] = useState<string | null>(null)
   const [fileRefreshKey, setFileRefreshKey] = useState(0)
+  const [showSettings, setShowSettings] = useState(false)
 
   const [tabs, setTabs] = useState<NoteEntry[]>(() => {
     try {
@@ -79,13 +82,6 @@ export default function App() {
       })
   }, [])
 
-  useEffect(() => {
-    if (!expanded) return
-    const unbind = window.api.onBlur(() => {
-      handleCollapse()
-    })
-    return () => unbind()
-  }, [expanded, handleCollapse])
 
   useEffect(() => {
     ensureFiresideScaffold()
@@ -109,19 +105,16 @@ export default function App() {
     localStorage.setItem('fireside-active-tab', note.filePath)
   }, [])
 
-  const handleCloseTab = useCallback(
-    (filePath: string, event: React.MouseEvent) => {
-      event.stopPropagation()
-      setTabs((prev) => {
-        const next = prev.filter((tab) => tab.filePath !== filePath)
-        localStorage.setItem('fireside-tabs', JSON.stringify(next))
-        return next
-      })
+  const closeTab = useCallback(
+    (filePath: string) => {
+      const idx = tabs.findIndex((tab) => tab.filePath === filePath)
+      if (idx === -1) return
+      const next = tabs.filter((tab) => tab.filePath !== filePath)
+      localStorage.setItem('fireside-tabs', JSON.stringify(next))
+      setTabs(next)
       setActiveTabPath((prev) => {
         if (prev !== filePath) return prev
-        const idx = tabs.findIndex((tab) => tab.filePath === filePath)
-        const remaining = tabs.filter((tab) => tab.filePath !== filePath)
-        const newActive = remaining[Math.min(idx, remaining.length - 1)]?.filePath ?? null
+        const newActive = (next[idx] ?? next[idx - 1])?.filePath ?? null
         if (newActive) localStorage.setItem('fireside-active-tab', newActive)
         else localStorage.removeItem('fireside-active-tab')
         return newActive
@@ -129,6 +122,68 @@ export default function App() {
     },
     [tabs]
   )
+
+  const handleCloseTab = useCallback(
+    (filePath: string, event: React.MouseEvent) => {
+      event.stopPropagation()
+      closeTab(filePath)
+    },
+    [closeTab]
+  )
+
+  useEffect(() => {
+    if (!expanded) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeIndex = tabs.findIndex((tab) => tab.filePath === activeTabPath)
+
+      // ⌘W — 현재 탭 닫기
+      if (e.metaKey && e.key === 'w') {
+        e.preventDefault()
+        if (activeTabPath) closeTab(activeTabPath)
+        return
+      }
+
+      // ⌘Shift+[ — 이전 탭
+      if (e.metaKey && e.shiftKey && e.key === '[') {
+        e.preventDefault()
+        if (activeIndex > 0) handleTabClick(tabs[activeIndex - 1])
+        return
+      }
+
+      // ⌘Shift+] — 다음 탭
+      if (e.metaKey && e.shiftKey && e.key === ']') {
+        e.preventDefault()
+        if (activeIndex < tabs.length - 1) handleTabClick(tabs[activeIndex + 1])
+        return
+      }
+
+      // ⌃Tab — 다음 탭 (순환)
+      if (e.ctrlKey && !e.shiftKey && e.key === 'Tab') {
+        e.preventDefault()
+        if (tabs.length > 0) handleTabClick(tabs[(activeIndex + 1) % tabs.length])
+        return
+      }
+
+      // ⌃Shift+Tab — 이전 탭 (순환)
+      if (e.ctrlKey && e.shiftKey && e.key === 'Tab') {
+        e.preventDefault()
+        if (tabs.length > 0) handleTabClick(tabs[(activeIndex - 1 + tabs.length) % tabs.length])
+        return
+      }
+
+      // ⌘1-⌘9 — 탭 번호로 이동 (⌘9 = 마지막 탭)
+      if (e.metaKey && /^[1-9]$/.test(e.key)) {
+        e.preventDefault()
+        const tab = e.key === '9' ? tabs[tabs.length - 1] : tabs[parseInt(e.key) - 1]
+        if (tab) handleTabClick(tab)
+        return
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [expanded, tabs, activeTabPath, closeTab, handleTabClick])
 
   const onFilesChanged = useCallback(() => {
     setFileRefreshKey((prev) => prev + 1)
@@ -187,6 +242,12 @@ export default function App() {
 
       {expanded && (
         <div className={styles.windowFrame}>
+          {showSettings && (
+            <Settings
+              onClose={() => setShowSettings(false)}
+              onVaultChanged={() => setFileRefreshKey((prev) => prev + 1)}
+            />
+          )}
           <div className={styles.titleBar}>
             <span className={styles.titleIcon}>🔥</span>
             <span className={styles.titleText}>Fireside · {MODE_LABELS[mode]} 모드</span>
@@ -201,6 +262,9 @@ export default function App() {
             >
               기본
             </button>
+            <button className={styles.iconBtn} onClick={() => setShowSettings(true)} title="설정">
+              ⚙
+            </button>
             <button className={styles.titleClose} onClick={handleCollapse} title="접기">
               ⌃
             </button>
@@ -210,7 +274,7 @@ export default function App() {
             <div className={styles.workspaceMain}>{renderWorkspace()}</div>
             {mode === 'default' && (
               <aside className={styles.infoPane}>
-                <Dashboard refreshKey={fileRefreshKey} />
+                <Dashboard refreshKey={fileRefreshKey} onSelectNote={handleSelect} />
               </aside>
             )}
             {showChatPane && (
@@ -218,7 +282,7 @@ export default function App() {
                 {activeAgent ? (
                   <AgentChat agent={activeAgent} onClose={() => setAgentChatId(null)} onFilesChanged={onFilesChanged} />
                 ) : (
-                  <Dashboard refreshKey={fileRefreshKey} />
+                  <Dashboard refreshKey={fileRefreshKey} onSelectNote={handleSelect} />
                 )}
               </aside>
             )}
