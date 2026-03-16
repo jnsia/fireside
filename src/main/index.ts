@@ -2,7 +2,7 @@ import { config } from 'dotenv'
 import { join } from 'path'
 config({ path: join(process.cwd(), '.env') })
 
-import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen } from 'electron'
+import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen, dialog } from 'electron'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import fs from 'fs'
@@ -10,7 +10,46 @@ import path from 'path'
 import os from 'os'
 
 const execAsync = promisify(exec)
-const NEUROSTARS_PATH = (process.env.NEUROSTARS_PATH || '/Users/jnsia/Documents/Neurostars').replace(/^~/, os.homedir())
+
+// ── 설정 ──────────────────────────────────────────────────────────
+type AppConfig = {
+  vaultPath: string
+  dailyNoteFolder: string
+  workLogFolder: string
+  apiKey: string
+  model: string
+  shell: string
+}
+
+const DEFAULT_CONFIG: AppConfig = {
+  vaultPath: (process.env.NEUROSTARS_PATH || '/Users/jnsia/Documents/Neurostars').replace(/^~/, os.homedir()),
+  dailyNoteFolder: '02_Areas/Life/Daily Log',
+  workLogFolder: '02_Areas/Work',
+  apiKey: '',
+  model: 'openrouter/free',
+  shell: '/bin/zsh'
+}
+
+function getConfigPath() {
+  return path.join(app.getPath('userData'), 'fireside-config.json')
+}
+
+function loadConfig(): AppConfig {
+  try {
+    const cfgPath = getConfigPath()
+    if (fs.existsSync(cfgPath)) {
+      const raw = fs.readFileSync(cfgPath, 'utf-8')
+      return { ...DEFAULT_CONFIG, ...JSON.parse(raw) }
+    }
+  } catch {}
+  return { ...DEFAULT_CONFIG }
+}
+
+function saveConfig(cfg: AppConfig): void {
+  fs.writeFileSync(getConfigPath(), JSON.stringify(cfg, null, 2), 'utf-8')
+}
+
+let cfg: AppConfig = { ...DEFAULT_CONFIG }
 
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 
@@ -23,7 +62,7 @@ function walk(dir: string): { name: string; filePath: string; rel: string }[] {
   if (!fs.existsSync(dir)) return []
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
     const full = path.join(dir, e.name)
-    const rel  = path.relative(NEUROSTARS_PATH, full)
+    const rel  = path.relative(cfg.vaultPath, full)
     if (e.isDirectory() && !e.name.startsWith('.')) return walk(full)
     if (e.isFile() && e.name.endsWith('.md')) return [{ name: e.name.replace(/\.md$/, ''), filePath: full, rel }]
     return []
@@ -32,15 +71,15 @@ function walk(dir: string): { name: string; filePath: string; rel: string }[] {
 
 function resolveVaultPath(relPath = '') {
   const normalized = path.normalize(relPath).replace(/^(\.\.(\/|\\|$))+/, '')
-  const full = path.resolve(NEUROSTARS_PATH, normalized)
-  if (!full.startsWith(path.resolve(NEUROSTARS_PATH))) {
+  const full = path.resolve(cfg.vaultPath, normalized)
+  if (!full.startsWith(path.resolve(cfg.vaultPath))) {
     throw new Error('접근 거부')
   }
   return full
 }
 
 function noteEntryFromPath(filePath: string) {
-  const rel = path.relative(NEUROSTARS_PATH, filePath)
+  const rel = path.relative(cfg.vaultPath, filePath)
   return {
     name: path.basename(filePath, '.md'),
     filePath,
@@ -65,12 +104,10 @@ async function getClient() {
   const OpenAI = (await import('openai')).default
   return new OpenAI({
     baseURL: 'https://openrouter.ai/api/v1',
-    apiKey: process.env.OPENROUTER_API_KEY ?? '',
+    apiKey: cfg.apiKey || process.env.OPENROUTER_API_KEY || '',
     defaultHeaders: { 'HTTP-Referer': 'https://fireside.app', 'X-Title': 'Fireside' }
   })
 }
-
-const MODEL = 'openrouter/free'
 
 // ── 에이전트 파일 도구 ─────────────────────────────────────────────
 const FS_TOOLS = [
@@ -146,30 +183,30 @@ async function executeFsTool(name: string, args: Record<string, string>): Promis
   try {
     switch (name) {
       case 'list_notes':
-        return { result: JSON.stringify(walk(NEUROSTARS_PATH)), filesChanged: false }
+        return { result: JSON.stringify(walk(cfg.vaultPath)), filesChanged: false }
 
       case 'read_note': {
-        if (!args.filePath.startsWith(NEUROSTARS_PATH)) return { result: '접근 거부: 허용된 경로가 아닙니다.', filesChanged: false }
+        if (!args.filePath.startsWith(cfg.vaultPath)) return { result: '접근 거부: 허용된 경로가 아닙니다.', filesChanged: false }
         const content = fs.readFileSync(args.filePath, 'utf-8')
         return { result: content, filesChanged: false }
       }
 
       case 'write_note': {
-        if (!args.filePath.startsWith(NEUROSTARS_PATH)) return { result: '접근 거부', filesChanged: false }
+        if (!args.filePath.startsWith(cfg.vaultPath)) return { result: '접근 거부', filesChanged: false }
         fs.mkdirSync(path.dirname(args.filePath), { recursive: true })
         fs.writeFileSync(args.filePath, args.content, 'utf-8')
         return { result: `저장 완료: ${path.basename(args.filePath)}`, filesChanged: true }
       }
 
       case 'new_note': {
-        fs.mkdirSync(NEUROSTARS_PATH, { recursive: true })
-        const filePath = path.join(NEUROSTARS_PATH, `${args.name}.md`)
+        fs.mkdirSync(cfg.vaultPath, { recursive: true })
+        const filePath = path.join(cfg.vaultPath, `${args.name}.md`)
         fs.writeFileSync(filePath, args.content || `# ${args.name}\n\n`, 'utf-8')
         return { result: JSON.stringify({ filePath, message: `'${args.name}.md' 생성 완료` }), filesChanged: true }
       }
 
       case 'delete_note': {
-        if (!args.filePath.startsWith(NEUROSTARS_PATH)) return { result: '접근 거부', filesChanged: false }
+        if (!args.filePath.startsWith(cfg.vaultPath)) return { result: '접근 거부', filesChanged: false }
         fs.unlinkSync(args.filePath)
         return { result: `삭제 완료: ${path.basename(args.filePath)}`, filesChanged: true }
       }
@@ -294,7 +331,9 @@ function createTray(): void {
 }
 
 app.whenReady().then(() => {
+  cfg = loadConfig()
   electronApp.setAppUserModelId('com.fireside')
+  Menu.setApplicationMenu(null)
   app.on('browser-window-created', (_, window) => { optimizer.watchWindowShortcuts(window) })
   createWindow()
   createTray()
@@ -334,7 +373,7 @@ ipcMain.handle('terminal:exec', async (_event, command: string, cwd?: string) =>
       cwd: cwd || os.homedir(),
       timeout: 30000,
       maxBuffer: 1024 * 512,
-      shell: process.env.SHELL || '/bin/zsh',
+      shell: cfg.shell || process.env.SHELL || '/bin/zsh',
     })
     return { stdout, stderr, error: null }
   } catch (err: any) {
@@ -343,8 +382,8 @@ ipcMain.handle('terminal:exec', async (_event, command: string, cwd?: string) =>
 })
 
 // ── IPC: 파일시스템 ───────────────────────────────────────────────
-ipcMain.handle('fs:list-notes',  async () => walk(NEUROSTARS_PATH))
-ipcMain.handle('fs:neurostars-path', async () => NEUROSTARS_PATH)
+ipcMain.handle('fs:list-notes',  async () => walk(cfg.vaultPath))
+ipcMain.handle('fs:neurostars-path', async () => cfg.vaultPath)
 
 ipcMain.handle('fs:read-note',   async (_event, filePath: string) =>
   fs.readFileSync(filePath, 'utf-8'))
@@ -360,7 +399,7 @@ ipcMain.handle('fs:new-note',    async (_event, name: string, parentRel = '') =>
   const dirPath = resolveVaultPath(parentRel)
   fs.mkdirSync(dirPath, { recursive: true })
   const filePath = path.join(dirPath, `${trimmed}.md`)
-  if (!filePath.startsWith(path.resolve(NEUROSTARS_PATH))) throw new Error('접근 거부')
+  if (!filePath.startsWith(path.resolve(cfg.vaultPath))) throw new Error('접근 거부')
   if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, `# ${trimmed}\n\n`, 'utf-8')
   return noteEntryFromPath(filePath)
 })
@@ -370,20 +409,20 @@ ipcMain.handle('fs:new-folder', async (_event, name: string, parentRel = '') => 
   if (!trimmed) throw new Error('이름이 필요합니다')
   const parentPath = resolveVaultPath(parentRel)
   const folderPath = path.join(parentPath, trimmed)
-  if (!folderPath.startsWith(path.resolve(NEUROSTARS_PATH))) throw new Error('접근 거부')
+  if (!folderPath.startsWith(path.resolve(cfg.vaultPath))) throw new Error('접근 거부')
   fs.mkdirSync(folderPath, { recursive: true })
-  return path.relative(NEUROSTARS_PATH, folderPath)
+  return path.relative(cfg.vaultPath, folderPath)
 })
 
 ipcMain.handle('fs:duplicate-note', async (_event, filePath: string) => {
-  if (!filePath.startsWith(path.resolve(NEUROSTARS_PATH))) throw new Error('접근 거부')
+  if (!filePath.startsWith(path.resolve(cfg.vaultPath))) throw new Error('접근 거부')
   const nextPath = duplicateNotePath(filePath)
   fs.copyFileSync(filePath, nextPath)
   return noteEntryFromPath(nextPath)
 })
 
 ipcMain.handle('fs:delete-note', async (_event, filePath: string) => {
-  if (!filePath.startsWith(NEUROSTARS_PATH)) throw new Error('접근 거부')
+  if (!filePath.startsWith(cfg.vaultPath)) throw new Error('접근 거부')
   fs.unlinkSync(filePath)
 })
 
@@ -393,7 +432,7 @@ ipcMain.handle('chat:plan', async (_event, payload: { messages: { role: string; 
   const { ORCHESTRATOR_PROMPT } = await import('./agents')
 
   const response = await client.chat.completions.create({
-    model: MODEL,
+    model: cfg.model,
     max_tokens: 512,
     messages: [
       { role: 'system', content: ORCHESTRATOR_PROMPT },
@@ -431,7 +470,7 @@ ipcMain.handle('chat:send', async (_event, payload: { agentId: string; messages:
   // 도구 호출 루프
   while (true) {
     const response = await client.chat.completions.create({
-      model: MODEL,
+      model: cfg.model,
       max_tokens: 1024,
       tools: FS_TOOLS,
       tool_choice: 'auto',
@@ -474,4 +513,23 @@ ipcMain.handle('chat:send', async (_event, payload: { agentId: string; messages:
       }
     }
   }
+})
+
+// ── IPC: 설정 ─────────────────────────────────────────────────────
+ipcMain.handle('config:get', () => ({ ...cfg }))
+
+ipcMain.handle('config:set', (_event, key: string, value: string) => {
+  if (key in cfg) {
+    (cfg as any)[key] = value
+    saveConfig(cfg)
+  }
+})
+
+ipcMain.handle('config:select-directory', async () => {
+  if (!mainWindow) return null
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory'],
+    title: '폴더 선택'
+  })
+  return result.canceled ? null : result.filePaths[0]
 })

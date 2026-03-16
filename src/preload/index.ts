@@ -25,6 +25,11 @@ contextBridge.exposeInMainWorld('api', {
   terminalExec: (command: string, cwd?: string) =>
     ipcRenderer.invoke('terminal:exec', command, cwd),
 
+  // 설정
+  getConfig: () => ipcRenderer.invoke('config:get'),
+  setConfig: (key: string, value: string) => ipcRenderer.invoke('config:set', key, value),
+  selectDirectory: () => ipcRenderer.invoke('config:select-directory'),
+
   // 파일시스템 (Neurostars)
   neurostarsPath: () => ipcRenderer.invoke('fs:neurostars-path'),
   listNotes: () => ipcRenderer.invoke('fs:list-notes'),

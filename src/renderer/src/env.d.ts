@@ -3,6 +3,14 @@
 interface NoteEntry { name: string; filePath: string; rel: string }
 interface ExecResult { stdout: string; stderr: string; error: string | null }
 interface ChatResult  { content: string; tokens: number; filesChanged: boolean; toolActions: string[] }
+type AppConfig = {
+  vaultPath: string
+  dailyNoteFolder: string
+  workLogFolder: string
+  apiKey: string
+  model: string
+  shell: string
+}
 
 interface Window {
   api: {
@@ -13,6 +21,9 @@ interface Window {
     animatePlaceWindow: (x: number, y: number, w: number, h: number, durationMs?: number) => Promise<void>
     onBlur: (callback: () => void) => () => void
     terminalExec: (command: string, cwd?: string) => Promise<ExecResult>
+    getConfig: () => Promise<AppConfig>
+    setConfig: (key: string, value: string) => Promise<void>
+    selectDirectory: () => Promise<string | null>
     neurostarsPath: () => Promise<string>
     listNotes:  () => Promise<NoteEntry[]>
     readNote:   (filePath: string) => Promise<string>
